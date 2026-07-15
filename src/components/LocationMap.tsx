@@ -11,7 +11,7 @@ export default function LocationMap() {
                         Location
                     </h2>
                     <p className="mx-auto mt-4 max-w-xl text-neutral-light">
-                        Serving the Greater Boston area.
+                        Serving selected Massachusetts communities.
                     </p>
                     <div className="mx-auto mt-4 h-px w-16 bg-brown" />
                 </div>
@@ -56,7 +56,7 @@ export default function LocationMap() {
                                 Map embed goes here
                             </p>
                             <p className="mt-2 text-sm text-neutral-light">
-                                Serving the Greater Boston &amp; MetroWest area
+                                Serving Weston, Lincoln, Concord, Wellesley, Wayland, Lexington and nearby areas
                             </p>
                         </div>
                     </div>

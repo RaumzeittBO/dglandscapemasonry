@@ -51,7 +51,7 @@ export default function Navbar() {
                             Landscape & Masonry
                         </span>
                         <span className={`block text-sm font-semibold ${scrolled ? "text-charcoal" : "text-white"}`}>
-                            Greater Boston
+                            Massachusetts
                         </span>
                     </span>
                 </a>
@@ -77,19 +77,19 @@ export default function Navbar() {
                         <a
                             href={getEmailUrl()}
                             onClick={reportConversion}
-                            className={`hidden rounded-full px-4 py-2 text-sm font-bold transition-all duration-300 hover:-translate-y-0.5 md:inline-flex ${
-                                scrolled
-                                    ? "bg-mist text-moss hover:bg-sage/18"
-                                    : "bg-white/12 text-white hover:bg-white/20"
-                            }`}
+                            className="hidden rounded-full bg-gold px-4 py-2.5 text-sm font-black text-ink shadow-[0_12px_30px_rgba(210,185,128,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-white md:inline-flex"
                         >
-                            Quote
+                            Email Quote
                         </a>
                     )}
                     <a
                         href={getCallUrl()}
                         onClick={reportConversion}
-                        className="inline-flex items-center gap-2 rounded-full bg-moss px-4 py-2.5 text-sm font-bold text-white shadow-[0_12px_30px_rgba(38,74,55,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-forest"
+                        className={`inline-flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-bold transition-all duration-300 hover:-translate-y-0.5 ${
+                            scrolled
+                                ? "bg-moss text-white shadow-[0_12px_30px_rgba(38,74,55,0.18)] hover:bg-forest"
+                                : "bg-white/12 text-white hover:bg-white/20"
+                        }`}
                     >
                         <span className="hidden sm:inline">Call/Text</span>
                         <span>{siteConfig.phoneDisplay}</span>

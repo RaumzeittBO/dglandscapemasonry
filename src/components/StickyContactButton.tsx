@@ -20,7 +20,7 @@ export default function StickyContactButton() {
                 <a
                     href={getCallUrl()}
                     onClick={reportConversion}
-                    className="flex items-center gap-2 rounded-full bg-charcoal px-5 py-3 text-sm font-medium text-white shadow-lg transition-all duration-200 hover:bg-charcoal-light hover:shadow-xl hover:scale-105"
+                    className="flex items-center gap-2 rounded-full bg-ink px-5 py-3 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:bg-forest hover:shadow-xl hover:scale-105"
                     aria-label={`Call ${siteConfig.phoneDisplay}`}
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -33,7 +33,7 @@ export default function StickyContactButton() {
                 <a
                     href={getSmsUrl()}
                     onClick={reportConversion}
-                    className="flex items-center gap-2 rounded-full bg-charcoal px-5 py-3 text-sm font-medium text-white shadow-lg transition-all duration-200 hover:bg-charcoal-light hover:shadow-xl hover:scale-105"
+                    className="flex items-center gap-2 rounded-full bg-ink px-5 py-3 text-sm font-bold text-white shadow-lg transition-all duration-200 hover:bg-forest hover:shadow-xl hover:scale-105"
                     aria-label={`Text ${siteConfig.phoneDisplay}`}
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -48,21 +48,21 @@ export default function StickyContactButton() {
                 <a
                     href={getEmailUrl()}
                     onClick={reportConversion}
-                    className="group flex items-center gap-2 rounded-full bg-charcoal px-5 py-3.5 font-medium text-white shadow-lg transition-all duration-300 hover:bg-charcoal-light hover:shadow-xl hover:scale-105"
+                    className="group flex items-center gap-2 rounded-full bg-gold px-5 py-3.5 font-black text-ink shadow-[0_18px_45px_rgba(210,185,128,0.28)] transition-all duration-300 hover:bg-white hover:shadow-xl hover:scale-105"
                     aria-label="Email us"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <rect x="2" y="4" width="20" height="16" rx="2" />
                         <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
                     </svg>
-                    <span className="hidden sm:inline">Email Us</span>
+                    <span className="hidden sm:inline">Free Estimate</span>
                 </a>
             )}
 
             {/* Toggle for Call/Text/Email options */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`flex h-10 w-10 items-center justify-center rounded-full bg-charcoal/80 text-white shadow-md transition-all duration-300 hover:bg-charcoal ${isOpen ? "rotate-45" : ""
+                className={`flex h-10 w-10 items-center justify-center rounded-full bg-ink/85 text-white shadow-md transition-all duration-300 hover:bg-forest ${isOpen ? "rotate-45" : ""
                     }`}
                 aria-label={isOpen ? "Close contact options" : "More contact options"}
             >

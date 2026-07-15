@@ -110,6 +110,24 @@ body {
   animation: hero-fade 1200ms ease-in-out forwards;
 }
 
+@keyframes project-scan {
+  0% {
+    left: -30%;
+  }
+
+  55% {
+    left: 112%;
+  }
+
+  100% {
+    left: 112%;
+  }
+}
+
+.project-scan {
+  animation: project-scan 5.5s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .reveal-element {
     opacity: 1;

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
 import { siteConfig } from "@/config/siteConfig";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -18,9 +19,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: `${siteConfig.companyName} — Landscaping & Masonry`,
+  title: `${siteConfig.companyName} - Landscaping & Masonry`,
   description:
-    "Premium landscaping and masonry construction for residential and commercial properties in the Greater Boston area. Founded in 2010.",
+    "Premium landscaping and masonry construction for residential and commercial properties across Massachusetts service areas. Founded in 2010.",
   keywords: [
     "landscaping",
     "masonry",
@@ -28,26 +29,21 @@ export const metadata: Metadata = {
     "retaining walls",
     "walkways",
     "lawn care",
-    "Boston landscaping",
+    "Massachusetts landscaping",
     "Massachusetts masonry",
     "D&G Landscaping",
   ],
   openGraph: {
-    title: `${siteConfig.companyName} — Landscaping & Masonry`,
+    title: `${siteConfig.companyName} - Landscaping & Masonry`,
     description:
-      "Landscaping & Masonry Built With Confidence. Design, maintenance, and transformations for residential and commercial properties.",
+      "Landscaping and masonry built with confidence. Design, maintenance, and transformations for residential and commercial properties.",
     type: "website",
     locale: "en_US",
-    // TODO: Add your real URL and OG image here
-    // url: "https://dglawnmasonry.com",
-    // images: [{ url: "/og-image.jpg", width: 1200, height: 630 }],
   },
   verification: {
     google: "XCK_Q0fCvWWnM3sVIA1CCrjN3c6PxK2H3UqJSsBbGPM",
   },
 };
-
-import GoogleAnalytics from "@/components/GoogleAnalytics";
 
 export default function RootLayout({
   children,
@@ -56,9 +52,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${playfair.variable} ${inter.variable} antialiased`}
-      >
+      <body className={`${playfair.variable} ${inter.variable} antialiased`}>
         <GoogleAnalytics />
         {children}
       </body>

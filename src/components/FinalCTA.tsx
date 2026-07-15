@@ -54,22 +54,22 @@ export default function FinalCTA() {
                     </p>
 
                     <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                        <a
-                            href={getCallUrl()}
-                            onClick={reportConversion}
-                            className="inline-flex items-center justify-center rounded-full bg-gold px-8 py-4 text-base font-black text-ink transition-all duration-300 hover:-translate-y-1 hover:bg-white"
-                        >
-                            Call/Text {siteConfig.phoneDisplay}
-                        </a>
                         {siteConfig.primaryEmail && (
                             <a
                                 href={getEmailUrl()}
                                 onClick={reportConversion}
-                                className="inline-flex items-center justify-center rounded-full border border-white/16 bg-white/10 px-8 py-4 text-base font-bold text-white backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:bg-white/18"
+                                className="inline-flex items-center justify-center rounded-full bg-gold px-8 py-4 text-base font-black text-ink transition-all duration-300 hover:-translate-y-1 hover:bg-white"
                             >
-                                Email for a quote
+                                Email for a free quote
                             </a>
                         )}
+                        <a
+                            href={getCallUrl()}
+                            onClick={reportConversion}
+                            className="inline-flex items-center justify-center rounded-full border border-white/16 bg-white/10 px-8 py-4 text-base font-bold text-white backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:bg-white/18"
+                        >
+                            Call/Text {siteConfig.phoneDisplay}
+                        </a>
                     </div>
                 </div>
             </section>
@@ -79,7 +79,7 @@ export default function FinalCTA() {
                     <div>
                         <h3 className="font-heading text-2xl font-bold text-charcoal">{siteConfig.companyName}</h3>
                         <p className="mt-3 max-w-sm text-sm leading-6 text-charcoal/62">
-                            Premium landscaping and masonry for residential and commercial properties around Greater Boston.
+                            Premium landscaping and masonry for residential and commercial properties across our Massachusetts service areas.
                         </p>
                     </div>
 

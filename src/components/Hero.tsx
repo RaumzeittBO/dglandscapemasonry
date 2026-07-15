@@ -25,6 +25,12 @@ const proofPoints = [
     "Residential and commercial crews",
 ];
 
+const projectDetails = [
+    "Free on-site estimate",
+    "Photo review before visit",
+    "Clear scope and timeline",
+];
+
 const INTERVAL = 5200;
 const FADE_DURATION = 1200;
 
@@ -62,24 +68,21 @@ export default function Hero() {
                     filter: "blur(0px)",
                     duration: 1,
                     ease: "power3.out",
-                    stagger: 0.09,
+                    stagger: 0.085,
                 }
             );
 
             gsap.fromTo(
                 ".hero-image-lift",
-                { opacity: 0, y: 44, scale: 0.96, rotate: -1.5 },
-                { opacity: 1, y: 0, scale: 1, rotate: 0, duration: 1.25, ease: "power3.out", delay: 0.18 }
+                { opacity: 0, y: 44, scale: 0.96, rotate: -1.2 },
+                { opacity: 1, y: 0, scale: 1, rotate: 0, duration: 1.2, ease: "power3.out", delay: 0.18 }
             );
 
-            gsap.to(".floating-proof", {
-                y: -10,
-                duration: 2.8,
-                ease: "sine.inOut",
-                repeat: -1,
-                yoyo: true,
-                stagger: 0.25,
-            });
+            gsap.fromTo(
+                ".project-detail",
+                { opacity: 0, x: 18 },
+                { opacity: 1, x: 0, duration: 0.7, ease: "power3.out", stagger: 0.08, delay: 0.55 }
+            );
         }, heroRef);
 
         const handlePointerMove = (event: PointerEvent) => {
@@ -88,8 +91,8 @@ export default function Hero() {
             const x = (event.clientX - rect.left) / rect.width - 0.5;
             const y = (event.clientY - rect.top) / rect.height - 0.5;
             gsap.to(imageFrameRef.current, {
-                rotateY: x * 5,
-                rotateX: y * -5,
+                rotateY: x * 3.5,
+                rotateX: y * -3.5,
                 transformPerspective: 900,
                 duration: 0.7,
                 ease: "power2.out",
@@ -136,43 +139,43 @@ export default function Hero() {
                         sizes="100vw"
                     />
                 )}
-                <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,13,10,0.96)_0%,rgba(8,13,10,0.78)_43%,rgba(8,13,10,0.36)_100%)]" />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_16%,rgba(210,185,128,0.22),transparent_34%),radial-gradient(circle_at_18%_82%,rgba(114,148,111,0.18),transparent_34%)]" />
+                <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,13,10,0.96)_0%,rgba(8,13,10,0.8)_48%,rgba(8,13,10,0.44)_100%)]" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_16%,rgba(210,185,128,0.2),transparent_34%),radial-gradient(circle_at_18%_82%,rgba(114,148,111,0.16),transparent_34%)]" />
             </div>
 
-            <div className="mx-auto grid min-h-[calc(100vh-7rem)] max-w-7xl items-center gap-12 px-6 pb-14 lg:grid-cols-[1.02fr_0.98fr] lg:pb-16">
+            <div className="mx-auto grid min-h-[calc(100vh-7rem)] max-w-7xl items-center gap-10 px-6 pb-14 lg:grid-cols-[0.96fr_1.04fr] lg:pb-16">
                 <div className="max-w-3xl">
-                    <div className="hero-reveal mb-6 inline-flex items-center gap-3 rounded-full border border-white/16 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-white/82 backdrop-blur-md">
+                    <div className="hero-reveal mb-5 inline-flex items-center gap-3 rounded-full border border-white/16 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-white/82 backdrop-blur-md">
                         <span className="h-2 w-2 rounded-full bg-sage shadow-[0_0_22px_rgba(166,196,147,0.9)]" />
-                        Greater Boston outdoor transformations
+                        Massachusetts outdoor transformations
                     </div>
 
-                    <h1 className="hero-reveal font-heading text-[clamp(2.65rem,5.5vw,5.25rem)] font-bold leading-[0.94] tracking-normal">
-                        Landscapes that make the whole property feel expensive.
+                    <h1 className="hero-reveal font-heading text-[clamp(2.75rem,5.35vw,5.1rem)] font-bold leading-[0.95] tracking-normal">
+                        Outdoor spaces that make the property feel complete.
                     </h1>
 
                     <p className="hero-reveal mt-5 max-w-2xl text-base leading-7 text-white/74 sm:text-lg">
-                        D&G Landscape and Masonry Inc. builds patios, stonework, lawns, and full outdoor upgrades with the kind of finish that makes people stop at the curb.
+                        D&G Landscape and Masonry Inc. builds patios, stonework, lawns, and full exterior upgrades with a polished finish that helps homeowners feel ready to hire.
                     </p>
 
                     <div className="hero-reveal mt-7 flex flex-col gap-3 sm:flex-row">
-                        <a
-                            href={getCallUrl()}
-                            onClick={reportConversion}
-                            className="group inline-flex items-center justify-center gap-3 rounded-full bg-gold px-7 py-4 text-base font-black text-ink shadow-[0_22px_50px_rgba(210,185,128,0.24)] transition-all duration-300 hover:-translate-y-1 hover:bg-white"
-                        >
-                            Get a fast estimate
-                            <span className="transition-transform group-hover:translate-x-1">→</span>
-                        </a>
                         {siteConfig.primaryEmail && (
                             <a
                                 href={getEmailUrl()}
                                 onClick={reportConversion}
-                                className="inline-flex items-center justify-center rounded-full border border-white/18 bg-white/10 px-7 py-4 text-base font-bold text-white backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:bg-white/18"
+                                className="group inline-flex items-center justify-center gap-3 rounded-full bg-gold px-7 py-4 text-base font-black text-ink shadow-[0_22px_50px_rgba(210,185,128,0.24)] transition-all duration-300 hover:-translate-y-1 hover:bg-white"
                             >
-                                Send project details
+                                Email for a free estimate
+                                <span className="transition-transform group-hover:translate-x-1">-&gt;</span>
                             </a>
                         )}
+                        <a
+                            href={getCallUrl()}
+                            onClick={reportConversion}
+                            className="inline-flex items-center justify-center rounded-full border border-white/18 bg-white/10 px-7 py-4 text-base font-bold text-white backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:bg-white/18"
+                        >
+                            Call/Text instead
+                        </a>
                     </div>
 
                     <div className="hero-reveal mt-7 grid max-w-2xl grid-cols-3 overflow-hidden rounded-3xl border border-white/14 bg-white/[0.08] backdrop-blur-xl">
@@ -183,45 +186,80 @@ export default function Hero() {
                             </div>
                         ))}
                     </div>
+
+                    <div className="hero-reveal mt-7 overflow-hidden rounded-[1.5rem] border border-white/14 bg-white/[0.08] shadow-[0_28px_80px_rgba(0,0,0,0.22)] backdrop-blur-xl lg:hidden">
+                        <div className="relative aspect-[16/10]">
+                            <Image
+                                src="/projects/project-01/after.jpg"
+                                alt="Completed patio and landscape project"
+                                fill
+                                className="object-cover"
+                                sizes="100vw"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-ink/72 via-transparent to-transparent" />
+                            <div className="absolute bottom-4 left-4 right-4">
+                                <div className="rounded-2xl border border-white/14 bg-ink/70 p-4 backdrop-blur-xl">
+                                    <div className="text-xs font-black uppercase tracking-[0.16em] text-gold">Free estimate ready</div>
+                                    <p className="mt-2 text-sm font-semibold leading-6 text-white/78">
+                                        Email photos, city, phone number, and the project you want quoted.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="hero-image-lift relative hidden min-h-[560px] lg:block">
+                <div className="hero-image-lift hidden lg:block">
                     <div
                         ref={imageFrameRef}
-                        className="absolute right-0 top-4 h-[520px] w-[82%] overflow-hidden rounded-[2rem] border border-white/16 bg-white/10 shadow-[0_40px_120px_rgba(0,0,0,0.45)]"
+                        className="overflow-hidden rounded-[2rem] border border-white/16 bg-white/10 shadow-[0_40px_120px_rgba(0,0,0,0.45)]"
                     >
-                        <Image
-                            src="/projects/project-01/after.jpg"
-                            alt="Completed patio and landscape project"
-                            fill
-                            priority
-                            className="object-cover"
-                            sizes="42vw"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-ink/72 via-transparent to-transparent" />
-                        <div className="absolute bottom-6 left-6 right-6 rounded-3xl border border-white/16 bg-ink/68 p-5 backdrop-blur-xl">
-                            <div className="text-xs font-bold uppercase tracking-[0.18em] text-gold">Featured finish</div>
-                            <p className="mt-2 font-heading text-2xl font-semibold text-white">
-                                Clean hardscape, sharp edges, ready for everyday living.
-                            </p>
+                        <div className="relative h-[360px] overflow-hidden">
+                            <Image
+                                src="/projects/project-01/after.jpg"
+                                alt="Completed patio and landscape project"
+                                fill
+                                priority
+                                className="object-cover"
+                                sizes="42vw"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-ink/70 via-ink/10 to-transparent" />
+                            <div className="project-scan absolute inset-y-0 w-20 bg-gradient-to-r from-transparent via-white/24 to-transparent" />
+                            <div className="absolute bottom-5 left-5 right-5 rounded-3xl border border-white/16 bg-ink/70 p-5 backdrop-blur-xl">
+                                <div className="text-xs font-bold uppercase tracking-[0.18em] text-gold">Featured finish</div>
+                                <p className="mt-2 font-heading text-2xl font-semibold text-white">
+                                    Clean hardscape, sharp edges, ready for everyday living.
+                                </p>
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="floating-proof absolute left-1 top-28 w-64 rounded-3xl border border-white/14 bg-white/92 p-5 text-ink shadow-[0_24px_70px_rgba(0,0,0,0.2)]">
-                        <div className="text-xs font-bold uppercase tracking-[0.16em] text-moss">What we handle</div>
-                        <div className="mt-4 space-y-3">
-                            {proofPoints.map((point) => (
-                                <div key={point} className="flex items-start gap-3 text-sm font-semibold text-charcoal/78">
-                                    <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-sage" />
-                                    <span>{point}</span>
+                        <div className="grid grid-cols-[0.72fr_1fr] border-t border-white/12 bg-ink/72">
+                            <div className="border-r border-white/12 p-6">
+                                <div className="font-heading text-5xl font-black leading-none text-gold">12%</div>
+                                <div className="mt-2 text-xs font-black uppercase tracking-[0.16em] text-white/72">
+                                    Off new customers
                                 </div>
-                            ))}
+                            </div>
+                            <div className="p-6">
+                                <div className="text-xs font-black uppercase tracking-[0.18em] text-sage">What we handle</div>
+                                <div className="mt-4 grid gap-3">
+                                    {proofPoints.map((point) => (
+                                        <div key={point} className="project-detail flex items-start gap-3 text-sm font-semibold text-white/76">
+                                            <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-sage" />
+                                            <span>{point}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="floating-proof absolute bottom-12 left-14 rounded-3xl border border-gold/30 bg-gold p-5 text-ink shadow-[0_30px_80px_rgba(0,0,0,0.28)]">
-                        <div className="font-heading text-5xl font-black leading-none">12%</div>
-                        <div className="mt-1 text-sm font-black uppercase tracking-[0.14em]">Off new customers</div>
+                    <div className="mt-4 grid grid-cols-3 gap-3">
+                        {projectDetails.map((detail) => (
+                            <div key={detail} className="rounded-2xl border border-white/12 bg-white/8 p-4 text-sm font-bold text-white/70 backdrop-blur-md">
+                                {detail}
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
