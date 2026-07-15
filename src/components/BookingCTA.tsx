@@ -1,52 +1,61 @@
 "use client";
 
 import { useScrollReveal } from "@/hooks/useGsapAnimations";
-import { siteConfig, getCallUrl } from "@/config/siteConfig";
+import { siteConfig, getCallUrl, getEmailUrl } from "@/config/siteConfig";
 import { reportConversion } from "@/utils/conversion";
 
 export default function BookingCTA() {
     useScrollReveal(".reveal-booking");
 
     return (
-        <section className="bg-white py-24 sm:py-32 border-t border-border">
-            <div className="mx-auto max-w-4xl px-6 text-center reveal-booking">
-                <span className="mb-4 inline-block text-xs font-semibold uppercase tracking-[0.2em] text-brown/70">
-                    Schedule an Estimate
-                </span>
-                <h2 className="mb-6 font-heading text-4xl font-bold text-charcoal sm:text-5xl">
-                    Get a Clear Plan &amp; Quote
-                </h2>
-                <p className="mx-auto mb-10 max-w-2xl text-lg text-neutral">
-                    Book a quick site visit with our team, and let&rsquo;s discuss how to bring your outdoor space to life.
-                </p>
+        <section className="bg-mist px-6 py-24 sm:py-32">
+            <div className="reveal-booking mx-auto max-w-7xl overflow-hidden rounded-[2rem] bg-ink text-white shadow-[0_35px_120px_rgba(12,18,14,0.22)]">
+                <div className="grid lg:grid-cols-[1fr_0.72fr]">
+                    <div className="p-8 sm:p-12 lg:p-16">
+                        <span className="inline-flex rounded-full bg-white/10 px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-gold">
+                            Schedule an estimate
+                        </span>
+                        <h2 className="mt-6 max-w-3xl font-heading text-5xl font-bold leading-[0.98] sm:text-6xl">
+                            Tell us what you want changed. We will bring the plan.
+                        </h2>
+                        <p className="mt-6 max-w-2xl text-lg leading-8 text-white/68">
+                            Send photos, measurements, or a quick description. D&G will help you turn it into a clear scope, realistic quote, and a property upgrade that feels worth it.
+                        </p>
 
-                <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-                    {siteConfig.primaryEmail && (
-                        <a
-                            href={`mailto:${siteConfig.primaryEmail}`}
-                            onClick={reportConversion}
-                            className="inline-flex items-center gap-2 rounded-full bg-brown px-8 py-4 text-base font-semibold text-white transition-all duration-300 hover:bg-brown-light hover:shadow-lg hover:shadow-brown/20 hover:scale-105"
-                        >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <rect x="2" y="4" width="20" height="16" rx="2" />
-                                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                            </svg>
-                            Email Us for a Quote
-                        </a>
-                    )}
+                        <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+                            {siteConfig.primaryEmail && (
+                                <a
+                                    href={getEmailUrl()}
+                                    onClick={reportConversion}
+                                    className="inline-flex items-center justify-center rounded-full bg-gold px-7 py-4 text-base font-black text-ink transition-all duration-300 hover:-translate-y-1 hover:bg-white"
+                                >
+                                    Email project details
+                                </a>
+                            )}
+                            <a
+                                href={getCallUrl()}
+                                onClick={reportConversion}
+                                className="inline-flex items-center justify-center rounded-full border border-white/16 bg-white/10 px-7 py-4 text-base font-bold text-white backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:bg-white/18"
+                            >
+                                Call/Text {siteConfig.phoneDisplay}
+                            </a>
+                        </div>
+                    </div>
 
-                    <span className="text-sm font-medium text-neutral-light">or</span>
-
-                    <a
-                        href={getCallUrl()}
-                        onClick={reportConversion}
-                        className="inline-flex items-center gap-2 rounded-full border border-charcoal/20 px-8 py-4 text-base font-semibold text-charcoal transition-all duration-300 hover:bg-offwhite hover:border-charcoal/40 hover:scale-105"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
-                        </svg>
-                        Call / Text
-                    </a>
+                    <div className="border-t border-white/10 bg-white/[0.06] p-8 sm:p-12 lg:border-l lg:border-t-0">
+                        <div className="grid h-full content-center gap-4">
+                            {[
+                                ["01", "Fast response"],
+                                ["02", "On-site estimate"],
+                                ["03", "Clean, crew-led execution"],
+                            ].map(([number, label]) => (
+                                <div key={number} className="rounded-3xl border border-white/12 bg-white/8 p-5">
+                                    <div className="text-sm font-black text-gold">{number}</div>
+                                    <div className="mt-2 font-heading text-2xl font-bold">{label}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

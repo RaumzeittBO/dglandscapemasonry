@@ -3,6 +3,12 @@
 @theme inline {
   --color-charcoal: #0B0B0B;
   --color-charcoal-light: #1A1A1A;
+  --color-ink: #08100C;
+  --color-forest: #173823;
+  --color-moss: #264A37;
+  --color-sage: #A6C493;
+  --color-gold: #D2B980;
+  --color-mist: #F3F5EF;
   --color-offwhite: #F7F7F5;
   --color-brown: #7A5A3A;
   --color-brown-light: #9A7A5A;
@@ -22,7 +28,7 @@ html {
 }
 
 body {
-  background-color: var(--color-offwhite);
+  background-color: var(--color-mist);
   color: var(--color-charcoal);
   font-family: var(--font-body), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -86,6 +92,22 @@ body {
 .reveal-element {
   opacity: 0;
   transform: translateY(30px);
+}
+
+@keyframes hero-fade {
+  from {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+
+  to {
+    opacity: 0.58;
+    transform: scale(1.05);
+  }
+}
+
+.animate-hero-fade {
+  animation: hero-fade 1200ms ease-in-out forwards;
 }
 
 @media (prefers-reduced-motion: reduce) {

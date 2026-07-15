@@ -8,7 +8,7 @@ export default function StickyContactButton() {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
-        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3 md:bottom-auto md:top-20">
+        <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
             {/* Expanded Options */}
             <div
                 className={`flex flex-col gap-2 transition-all duration-300 ${isOpen

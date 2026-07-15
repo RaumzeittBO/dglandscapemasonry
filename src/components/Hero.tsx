@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import gsap from "gsap";
 import { siteConfig, getCallUrl, getEmailUrl } from "@/config/siteConfig";
 import { reportConversion } from "@/utils/conversion";
-import { useHeroTextReveal } from "@/hooks/useGsapAnimations";
-import gsap from "gsap";
 
 const heroImages = [
     "/images/hero-1.jpg",
@@ -14,274 +13,223 @@ const heroImages = [
     "/images/hero-4.jpg",
 ];
 
-const INTERVAL = 5000; // 5 seconds between slides
-const FADE_DURATION = 1200; // 1.2s crossfade
+const metrics = [
+    { value: "2010", label: "Founded" },
+    { value: "5.0", label: "Google rating" },
+    { value: "12%", label: "New customer offer" },
+];
+
+const proofPoints = [
+    "Patios, walkways, retaining walls",
+    "Landscape renovations and maintenance",
+    "Residential and commercial crews",
+];
+
+const INTERVAL = 5200;
+const FADE_DURATION = 1200;
 
 export default function Hero() {
     const heroRef = useRef<HTMLElement>(null);
-    const bgRef = useRef<HTMLDivElement>(null);
+    const imageFrameRef = useRef<HTMLDivElement>(null);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [nextIndex, setNextIndex] = useState<number | null>(null);
 
-    useHeroTextReveal("#hero-headline");
-
-    // Auto-rotate images
     const advance = useCallback(() => {
         const next = (currentIndex + 1) % heroImages.length;
         setNextIndex(next);
-
-        setTimeout(() => {
+        window.setTimeout(() => {
             setCurrentIndex(next);
             setNextIndex(null);
         }, FADE_DURATION);
     }, [currentIndex]);
 
     useEffect(() => {
-        const timer = setInterval(advance, INTERVAL);
-        return () => clearInterval(timer);
+        const timer = window.setInterval(advance, INTERVAL);
+        return () => window.clearInterval(timer);
     }, [advance]);
 
-    // Subtle parallax on desktop
     useEffect(() => {
-        const prefersReducedMotion = window.matchMedia(
-            "(prefers-reduced-motion: reduce)"
-        ).matches;
-
-        if (prefersReducedMotion || window.innerWidth < 768) return;
-
-        const handleScroll = () => {
-            if (bgRef.current) {
-                const scrollY = window.scrollY;
-                gsap.set(bgRef.current, {
-                    y: scrollY * 0.3,
-                });
-            }
-        };
-
-        window.addEventListener("scroll", handleScroll, { passive: true });
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
-
-    // Fade-in for subtitle and buttons, plus shimmer loop
-    useEffect(() => {
-        const prefersReducedMotion = window.matchMedia(
-            "(prefers-reduced-motion: reduce)"
-        ).matches;
+        const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         if (prefersReducedMotion) return;
 
-        const heroCtx = gsap.context(() => {
+        const ctx = gsap.context(() => {
             gsap.fromTo(
-                ".hero-fade-in",
-                { opacity: 0, y: 20 },
+                ".hero-reveal",
+                { opacity: 0, y: 34, filter: "blur(10px)" },
                 {
                     opacity: 1,
                     y: 0,
-                    duration: 0.8,
-                    stagger: 0.15,
+                    filter: "blur(0px)",
+                    duration: 1,
                     ease: "power3.out",
-                    delay: 1.2,
+                    stagger: 0.09,
                 }
             );
 
-            // Shimmer animation for promo card
-            gsap.fromTo(".promo-shimmer",
-                { x: "-100%" },
-                {
-                    x: "300%",
-                    duration: 1.5,
-                    ease: "power1.inOut",
-                    repeat: -1,
-                    repeatDelay: 6,
-                    delay: 2.5
-                }
+            gsap.fromTo(
+                ".hero-image-lift",
+                { opacity: 0, y: 44, scale: 0.96, rotate: -1.5 },
+                { opacity: 1, y: 0, scale: 1, rotate: 0, duration: 1.25, ease: "power3.out", delay: 0.18 }
             );
+
+            gsap.to(".floating-proof", {
+                y: -10,
+                duration: 2.8,
+                ease: "sine.inOut",
+                repeat: -1,
+                yoyo: true,
+                stagger: 0.25,
+            });
         }, heroRef);
 
-        return () => heroCtx.revert();
+        const handlePointerMove = (event: PointerEvent) => {
+            if (!imageFrameRef.current) return;
+            const rect = imageFrameRef.current.getBoundingClientRect();
+            const x = (event.clientX - rect.left) / rect.width - 0.5;
+            const y = (event.clientY - rect.top) / rect.height - 0.5;
+            gsap.to(imageFrameRef.current, {
+                rotateY: x * 5,
+                rotateX: y * -5,
+                transformPerspective: 900,
+                duration: 0.7,
+                ease: "power2.out",
+            });
+        };
+
+        const handlePointerLeave = () => {
+            if (!imageFrameRef.current) return;
+            gsap.to(imageFrameRef.current, { rotateX: 0, rotateY: 0, duration: 0.7, ease: "power2.out" });
+        };
+
+        const frame = imageFrameRef.current;
+        frame?.addEventListener("pointermove", handlePointerMove);
+        frame?.addEventListener("pointerleave", handlePointerLeave);
+
+        return () => {
+            frame?.removeEventListener("pointermove", handlePointerMove);
+            frame?.removeEventListener("pointerleave", handlePointerLeave);
+            ctx.revert();
+        };
     }, []);
 
     return (
         <section
             ref={heroRef}
             id="hero"
-            className="relative flex min-h-screen items-center justify-center overflow-hidden"
+            className="relative isolate min-h-screen overflow-hidden bg-ink pt-28 text-white sm:pt-32"
         >
-            {/* Background Images with Crossfade */}
-            <div ref={bgRef} className="absolute inset-0 -top-20">
-                {/* Current image (always visible) */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                    key={`current-${currentIndex}`}
+            <div className="absolute inset-0 -z-20">
+                <Image
                     src={heroImages[currentIndex]}
-                    alt="D&G Landscaping and Masonry work"
-                    className="absolute inset-0 h-full w-full object-cover"
-                    style={{ minHeight: "120%" }}
-                    fetchPriority="high"
+                    alt="Finished landscape and masonry project"
+                    fill
+                    priority
+                    className="scale-105 object-cover opacity-58"
+                    sizes="100vw"
                 />
-
-                {/* Next image (fades in on top) */}
                 {nextIndex !== null && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                        key={`next-${nextIndex}`}
+                    <Image
                         src={heroImages[nextIndex]}
-                        alt="D&G Landscaping and Masonry work"
-                        className="absolute inset-0 h-full w-full object-cover"
-                        style={{
-                            minHeight: "120%",
-                            animation: `heroFadeIn ${FADE_DURATION}ms ease-in-out forwards`,
-                        }}
+                        alt="Finished landscape and masonry project"
+                        fill
+                        className="scale-105 animate-hero-fade object-cover opacity-58"
+                        sizes="100vw"
                     />
                 )}
-
-                {/* Dark overlay gradient for readability */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/30 to-black/60" />
+                <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(8,13,10,0.96)_0%,rgba(8,13,10,0.78)_43%,rgba(8,13,10,0.36)_100%)]" />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_72%_16%,rgba(210,185,128,0.22),transparent_34%),radial-gradient(circle_at_18%_82%,rgba(114,148,111,0.18),transparent_34%)]" />
             </div>
 
-            {/* Inline keyframes */}
-            <style jsx>{`
-                @keyframes heroFadeIn {
-                    from { opacity: 0; }
-                    to { opacity: 1; }
-                }
-            `}</style>
-
-            {/* Content */}
-            <div className="relative w-full z-10 mx-auto max-w-7xl px-6 py-32 text-center">
-                {/* Logo with professional frosted glass container */}
-                <div className="hero-fade-in mx-auto mb-8 flex justify-center items-center opacity-0 drop-shadow-lg">
-                    <div className="rounded-2xl bg-white/70 backdrop-blur-md border border-white/50 px-8 py-6 shadow-xl">
-                        <Image
-                            src="/logo/dg-logo.png"
-                            alt="D&G Landscape and Masonry Inc."
-                            width={320}
-                            height={160}
-                            className="mx-auto h-auto w-48 sm:w-56 md:w-64 lg:w-72"
-                            priority
-                        />
+            <div className="mx-auto grid min-h-[calc(100vh-7rem)] max-w-7xl items-center gap-12 px-6 pb-14 lg:grid-cols-[1.02fr_0.98fr] lg:pb-16">
+                <div className="max-w-3xl">
+                    <div className="hero-reveal mb-6 inline-flex items-center gap-3 rounded-full border border-white/16 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-white/82 backdrop-blur-md">
+                        <span className="h-2 w-2 rounded-full bg-sage shadow-[0_0_22px_rgba(166,196,147,0.9)]" />
+                        Greater Boston outdoor transformations
                     </div>
-                </div>
 
-                {/* Promo Card (Desktop) */}
-                <div className="hidden lg:flex promo-card hero-fade-in absolute right-6 top-[30%] -translate-y-[30%] flex-col items-start gap-1 rounded-2xl border border-brown/40 bg-white/95 p-7 shadow-2xl backdrop-blur-xl max-w-sm opacity-0 text-left overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-brown/20 hover:border-brown z-20 cursor-default">
-                    <div className="promo-shimmer absolute top-0 -left-[100%] h-full w-[100%] bg-gradient-to-r from-transparent via-white/90 to-transparent skew-x-12 z-0" />
+                    <h1 className="hero-reveal font-heading text-[clamp(2.65rem,5.5vw,5.25rem)] font-bold leading-[0.94] tracking-normal">
+                        Landscapes that make the whole property feel expensive.
+                    </h1>
 
-                    <div className="relative z-10 flex flex-col">
-                        <span className="font-heading text-5xl font-extrabold text-charcoal tracking-tight drop-shadow-sm">12% OFF</span>
-                        <span className="font-heading text-2xl font-bold text-brown drop-shadow-sm">for New Customers</span>
-                        <div className="mt-3 flex items-center gap-2">
-                            <span className="relative flex h-2.5 w-2.5">
-                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#20bd5a] opacity-75" />
-                                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#20bd5a]" />
-                            </span>
-                            <span className="text-sm font-semibold text-charcoal/70 uppercase tracking-wider">Limited-time offer</span>
-                        </div>
-                    </div>
-                </div>
+                    <p className="hero-reveal mt-5 max-w-2xl text-base leading-7 text-white/74 sm:text-lg">
+                        D&G Landscape and Masonry Inc. builds patios, stonework, lawns, and full outdoor upgrades with the kind of finish that makes people stop at the curb.
+                    </p>
 
-
-                <h1
-                    id="hero-headline"
-                    className="font-heading text-5xl font-bold leading-tight tracking-tight text-white opacity-0 sm:text-6xl md:text-7xl lg:text-8xl"
-                    style={{ perspective: "600px" }}
-                >
-                    D&amp;G Landscape
-                    <br />
-                    <span className="text-white/90">and Masonry Inc.</span>
-                </h1>
-
-                <p className="hero-fade-in mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-white/80 opacity-0 sm:text-xl">
-                    Residential &amp; Commercial landscape and masonry work, including hardscape construction and professional sod installation.
-                </p>
-
-                {/* Buttons */}
-                <div className="hero-fade-in mt-10 flex flex-col items-center gap-4 opacity-0 sm:flex-row sm:justify-center">
-                    {siteConfig.primaryEmail && (
+                    <div className="hero-reveal mt-7 flex flex-col gap-3 sm:flex-row">
                         <a
-                            href={getEmailUrl()}
+                            href={getCallUrl()}
                             onClick={reportConversion}
-                            className="inline-flex items-center gap-2 rounded-full bg-charcoal px-8 py-4 text-base font-semibold text-white transition-all duration-300 hover:bg-charcoal-light hover:shadow-lg hover:shadow-charcoal/20 hover:scale-105"
+                            className="group inline-flex items-center justify-center gap-3 rounded-full bg-gold px-7 py-4 text-base font-black text-ink shadow-[0_22px_50px_rgba(210,185,128,0.24)] transition-all duration-300 hover:-translate-y-1 hover:bg-white"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <rect x="2" y="4" width="20" height="16" rx="2" />
-                                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                            </svg>
-                            Email Us for a Quote
+                            Get a fast estimate
+                            <span className="transition-transform group-hover:translate-x-1">→</span>
                         </a>
-                    )}
-                    <a
-                        href={getCallUrl()}
-                        onClick={reportConversion}
-                        className="inline-flex items-center gap-2 rounded-full bg-white px-8 py-4 text-base font-semibold text-charcoal transition-all duration-300 hover:bg-offwhite hover:shadow-lg hover:shadow-white/20 hover:scale-105"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
-                        </svg>
-                        Call / Text
-                    </a>
+                        {siteConfig.primaryEmail && (
+                            <a
+                                href={getEmailUrl()}
+                                onClick={reportConversion}
+                                className="inline-flex items-center justify-center rounded-full border border-white/18 bg-white/10 px-7 py-4 text-base font-bold text-white backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:bg-white/18"
+                            >
+                                Send project details
+                            </a>
+                        )}
+                    </div>
+
+                    <div className="hero-reveal mt-7 grid max-w-2xl grid-cols-3 overflow-hidden rounded-3xl border border-white/14 bg-white/[0.08] backdrop-blur-xl">
+                        {metrics.map((metric) => (
+                            <div key={metric.label} className="border-r border-white/12 px-4 py-5 last:border-r-0 sm:px-6">
+                                <div className="font-heading text-3xl font-bold text-white">{metric.value}</div>
+                                <div className="mt-1 text-xs font-semibold uppercase tracking-[0.14em] text-white/54">{metric.label}</div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
 
-                {/* Promo Card (Mobile) */}
-                <div className="lg:hidden promo-card hero-fade-in mt-10 w-full max-w-sm mx-auto overflow-hidden rounded-2xl border border-brown/40 bg-white/95 p-6 shadow-2xl backdrop-blur-xl opacity-0 text-center transition-transform active:scale-95 relative z-20">
-                    <div className="promo-shimmer absolute top-0 -left-[100%] h-full w-[100%] bg-gradient-to-r from-transparent via-white/90 to-transparent skew-x-12 z-0" />
-
-                    <div className="relative z-10 flex flex-col items-center">
-                        <span className="font-heading text-4xl font-extrabold text-charcoal tracking-tight drop-shadow-sm">12% OFF</span>
-                        <span className="font-heading text-xl font-bold text-brown drop-shadow-sm">for New Customers</span>
-                        <div className="mt-2 flex items-center gap-2">
-                            <span className="relative flex h-2.5 w-2.5">
-                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#20bd5a] opacity-75" />
-                                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#20bd5a]" />
-                            </span>
-                            <span className="text-xs font-semibold text-charcoal/70 uppercase tracking-wider">Limited-time offer</span>
+                <div className="hero-image-lift relative hidden min-h-[560px] lg:block">
+                    <div
+                        ref={imageFrameRef}
+                        className="absolute right-0 top-4 h-[520px] w-[82%] overflow-hidden rounded-[2rem] border border-white/16 bg-white/10 shadow-[0_40px_120px_rgba(0,0,0,0.45)]"
+                    >
+                        <Image
+                            src="/projects/project-01/after.jpg"
+                            alt="Completed patio and landscape project"
+                            fill
+                            priority
+                            className="object-cover"
+                            sizes="42vw"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-ink/72 via-transparent to-transparent" />
+                        <div className="absolute bottom-6 left-6 right-6 rounded-3xl border border-white/16 bg-ink/68 p-5 backdrop-blur-xl">
+                            <div className="text-xs font-bold uppercase tracking-[0.18em] text-gold">Featured finish</div>
+                            <p className="mt-2 font-heading text-2xl font-semibold text-white">
+                                Clean hardscape, sharp edges, ready for everyday living.
+                            </p>
                         </div>
                     </div>
-                </div>
-                {/* Secondary: scroll to portfolio */}
-                <div className="hero-fade-in mt-4 opacity-0">
-                    <a
-                        href="#portfolio"
-                        className="inline-flex items-center gap-2 text-sm font-medium text-white/50 transition-colors hover:text-white"
-                    >
-                        View Before &amp; After Work
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M7 13l5 5 5-5" />
-                            <path d="M7 6l5 5 5-5" />
-                        </svg>
-                    </a>
-                </div>
 
-                {/* Contact Line */}
-                <div className="hero-fade-in mt-8 flex flex-col items-center gap-2 opacity-0 sm:flex-row sm:justify-center sm:gap-4">
-                    <a
-                        href={getCallUrl()}
-                        className="inline-flex items-center gap-2 text-sm text-white/60 transition-colors hover:text-white"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
-                        </svg>
-                        Call/Text: {siteConfig.phoneDisplay}
-                    </a>
-                    <span className="hidden text-white/20 sm:inline">•</span>
-                    <a
-                        href={getEmailUrl()}
-                        className="inline-flex items-center gap-2 text-sm text-white/60 transition-colors hover:text-white"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <rect x="2" y="4" width="20" height="16" rx="2" />
-                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                        </svg>
-                        {siteConfig.primaryEmail}
-                    </a>
-                </div>
+                    <div className="floating-proof absolute left-1 top-28 w-64 rounded-3xl border border-white/14 bg-white/92 p-5 text-ink shadow-[0_24px_70px_rgba(0,0,0,0.2)]">
+                        <div className="text-xs font-bold uppercase tracking-[0.16em] text-moss">What we handle</div>
+                        <div className="mt-4 space-y-3">
+                            {proofPoints.map((point) => (
+                                <div key={point} className="flex items-start gap-3 text-sm font-semibold text-charcoal/78">
+                                    <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-sage" />
+                                    <span>{point}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
 
-                {/* Scroll indicator */}
-                <div className="hero-fade-in absolute bottom-8 left-1/2 -translate-x-1/2 opacity-0">
-                    <div className="flex flex-col items-center gap-2 text-white/30">
-                        <span className="text-xs uppercase tracking-widest">Scroll</span>
-                        <div className="h-8 w-px animate-pulse bg-brown/40" />
+                    <div className="floating-proof absolute bottom-12 left-14 rounded-3xl border border-gold/30 bg-gold p-5 text-ink shadow-[0_30px_80px_rgba(0,0,0,0.28)]">
+                        <div className="font-heading text-5xl font-black leading-none">12%</div>
+                        <div className="mt-1 text-sm font-black uppercase tracking-[0.14em]">Off new customers</div>
                     </div>
                 </div>
+            </div>
+
+            <div className="absolute bottom-4 left-1/2 hidden -translate-x-1/2 items-center gap-3 text-xs font-bold uppercase tracking-[0.2em] text-white/40 md:flex">
+                <span className="h-px w-12 bg-white/20" />
+                Scroll
+                <span className="h-px w-12 bg-white/20" />
             </div>
         </section>
     );
