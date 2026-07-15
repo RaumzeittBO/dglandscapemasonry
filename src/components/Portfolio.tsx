@@ -124,6 +124,8 @@ export default function Portfolio() {
                         {siteConfig.primaryEmail && (
                             <a
                                 href={getEmailUrl()}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 onClick={reportConversion}
                                 className="inline-flex items-center gap-2 rounded-full bg-white px-8 py-3.5 font-bold text-ink transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
                             >

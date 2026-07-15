@@ -26,6 +26,8 @@ export default function BookingCTA() {
                             {siteConfig.primaryEmail && (
                                 <a
                                     href={getEmailUrl()}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     onClick={reportConversion}
                                     className="inline-flex items-center justify-center rounded-full bg-gold px-7 py-4 text-base font-black text-ink transition-all duration-300 hover:-translate-y-1 hover:bg-white"
                                 >

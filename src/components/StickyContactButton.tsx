@@ -47,6 +47,8 @@ export default function StickyContactButton() {
             {siteConfig.primaryEmail && (
                 <a
                     href={getEmailUrl()}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     onClick={reportConversion}
                     className="group flex items-center gap-2 rounded-full bg-gold px-5 py-3.5 font-black text-ink shadow-[0_18px_45px_rgba(210,185,128,0.28)] transition-all duration-300 hover:bg-white hover:shadow-xl hover:scale-105"
                     aria-label="Email us"

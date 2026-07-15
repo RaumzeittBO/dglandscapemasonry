@@ -57,5 +57,10 @@ export function getEmailUrl() {
     "Thank you.",
   ].join("\n");
 
-  return `mailto:${siteConfig.primaryEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(siteConfig.primaryEmail)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+
+export function getMailtoUrl() {
+  const subject = "Free estimate request - D&G Landscape and Masonry";
+  return `mailto:${siteConfig.primaryEmail}?subject=${encodeURIComponent(subject)}`;
 }

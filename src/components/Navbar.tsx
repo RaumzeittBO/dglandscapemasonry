@@ -76,6 +76,8 @@ export default function Navbar() {
                     {siteConfig.primaryEmail && (
                         <a
                             href={getEmailUrl()}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             onClick={reportConversion}
                             className="hidden rounded-full bg-gold px-4 py-2.5 text-sm font-black text-ink shadow-[0_12px_30px_rgba(210,185,128,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-white md:inline-flex"
                         >

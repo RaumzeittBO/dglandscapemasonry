@@ -41,6 +41,8 @@ export default function ServiceAreas() {
                     <div className="mt-5 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
                         <a
                             href={getEmailUrl()}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             onClick={reportConversion}
                             className="inline-flex items-center gap-2 rounded-full bg-moss px-6 py-3 text-sm font-black text-white transition-all duration-300 hover:-translate-y-1 hover:bg-forest hover:shadow-lg"
                         >

@@ -162,6 +162,8 @@ export default function Hero() {
                         {siteConfig.primaryEmail && (
                             <a
                                 href={getEmailUrl()}
+                                target="_blank"
+                                rel="noopener noreferrer"
                                 onClick={reportConversion}
                                 className="group inline-flex items-center justify-center gap-3 rounded-full bg-gold px-7 py-4 text-base font-black text-ink shadow-[0_22px_50px_rgba(210,185,128,0.24)] transition-all duration-300 hover:-translate-y-1 hover:bg-white"
                             >
