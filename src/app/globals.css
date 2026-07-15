@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-charcoal: #0B0B0B;
+  --color-charcoal-light: #1A1A1A;
+  --color-offwhite: #F7F7F5;
+  --color-brown: #7A5A3A;
+  --color-brown-light: #9A7A5A;
+  --color-brown-dark: #5A3A1A;
+  --color-soft-green: #BFD8C2;
+  --color-soft-green-light: #D4E8D6;
+  --color-neutral: #6B6B6B;
+  --color-neutral-light: #999999;
+  --color-border: #E5E5E3;
+  --font-heading: var(--font-playfair);
+  --font-body: var(--font-inter);
+}
+
+/* Base styles */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-offwhite);
+  color: var(--color-charcoal);
+  font-family: var(--font-body), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Selection */
+::selection {
+  background-color: var(--color-brown);
+  color: white;
+}
+
+/* Focus states */
+:focus-visible {
+  outline: 2px solid var(--color-brown);
+  outline-offset: 2px;
+}
+
+/* Smooth scroll disable for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-charcoal);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-brown);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-brown-light);
+}
+
+/* Before/After Slider specific */
+.before-after-slider {
+  cursor: col-resize;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+/* Section reveal animation base */
+.reveal-element {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-element {
+    opacity: 1;
+    transform: none;
+  }
+}
