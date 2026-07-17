@@ -11,7 +11,7 @@ export type EmailBotConfig = {
     clientSecret?: string;
     refreshToken?: string;
   };
-  openai: {
+  gemini: {
     apiKey?: string;
     model: string;
   };
@@ -37,9 +37,9 @@ export function getEmailBotConfig(): EmailBotConfig {
       clientSecret: process.env.GMAIL_CLIENT_SECRET,
       refreshToken: process.env.GMAIL_REFRESH_TOKEN,
     },
-    openai: {
-      apiKey: process.env.OPENAI_API_KEY,
-      model: process.env.OPENAI_MODEL || "gpt-4.1-mini",
+    gemini: {
+      apiKey: process.env.GEMINI_API_KEY,
+      model: process.env.GEMINI_MODEL || "gemini-2.0-flash",
     },
   };
 }

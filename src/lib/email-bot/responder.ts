@@ -62,59 +62,58 @@ function fallbackDecision(email: ParsedEmail): LeadDecision {
   };
 }
 
-function extractOutputText(data: unknown) {
+function extractGeminiText(data: unknown) {
   const response = data as {
-    output_text?: string;
-    output?: Array<{ content?: Array<{ text?: string; type?: string }> }>;
+    candidates?: Array<{
+      content?: {
+        parts?: Array<{ text?: string }>;
+      };
+    }>;
   };
 
-  if (response.output_text) return response.output_text;
-
   return (
-    response.output
-      ?.flatMap((item) => item.content || [])
-      .map((content) => content.text)
+    response.candidates
+      ?.flatMap((candidate) => candidate.content?.parts || [])
+      .map((part) => part.text)
       .filter(Boolean)
       .join("\n") || ""
   );
 }
 
 export async function createLeadDecision(email: ParsedEmail, config: EmailBotConfig): Promise<LeadDecision> {
-  if (!config.openai.apiKey) return fallbackDecision(email);
+  if (!config.gemini.apiKey) return fallbackDecision(email);
 
-  const response = await fetch("https://api.openai.com/v1/responses", {
+  const prompt = [
+    "You are an email assistant for D&G Landscape and Masonry Inc.",
+    "Classify leads and draft concise, natural replies.",
+    "Never promise final pricing. Never invent calendar availability.",
+    "Return only valid JSON with keys: isLead boolean, needsHumanReview boolean, summary string, missingInfo string[], reply string.",
+    "The reply must be warm, professional, and ask for missing info needed for a free estimate.",
+    "If the message is spam, vendor outreach, legal, angry, or unclear, set needsHumanReview true.",
+    "",
+    `From: ${email.from}`,
+    `Subject: ${email.subject}`,
+    `Snippet: ${email.snippet || ""}`,
+    "Body:",
+    email.text,
+  ].join("\n");
+
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${config.gemini.model}:generateContent`, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${config.openai.apiKey}`,
+      "x-goog-api-key": config.gemini.apiKey,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: config.openai.model,
-      input: [
-        {
-          role: "system",
-          content:
-            "You are an email assistant for D&G Landscape and Masonry Inc. Classify leads and draft concise, natural replies. Never promise final pricing. Never invent calendar availability. Return only valid JSON.",
-        },
+      contents: [
         {
           role: "user",
-          content: [
-            "Return JSON with keys: isLead boolean, needsHumanReview boolean, summary string, missingInfo string[], reply string.",
-            "The reply must be warm, professional, and ask for missing info needed for a free estimate.",
-            "If the message is spam, vendor outreach, legal, angry, or unclear, set needsHumanReview true.",
-            "",
-            `From: ${email.from}`,
-            `Subject: ${email.subject}`,
-            `Snippet: ${email.snippet || ""}`,
-            "Body:",
-            email.text,
-          ].join("\n"),
+          parts: [{ text: prompt }],
         },
       ],
-      text: {
-        format: {
-          type: "json_object",
-        },
+      generationConfig: {
+        response_mime_type: "application/json",
+        temperature: 0.3,
       },
     }),
   });
@@ -123,17 +122,17 @@ export async function createLeadDecision(email: ParsedEmail, config: EmailBotCon
     return {
       ...fallbackDecision(email),
       needsHumanReview: true,
-      summary: `OpenAI request failed. Fallback draft created. Status: ${response.status}`,
+      summary: `Gemini request failed. Fallback draft created. Status: ${response.status}`,
     };
   }
 
-  const text = extractOutputText(await response.json());
+  const text = extractGeminiText(await response.json());
   const parsed = safeJsonParse(text);
   if (!parsed) {
     return {
       ...fallbackDecision(email),
       needsHumanReview: true,
-      summary: "OpenAI returned invalid JSON. Fallback draft created.",
+      summary: "Gemini returned invalid JSON. Fallback draft created.",
     };
   }
 

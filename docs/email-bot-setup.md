@@ -25,13 +25,13 @@ Set these in Vercel Project Settings > Environment Variables:
 
 Optional:
 
-- `OPENAI_API_KEY`
-- `OPENAI_MODEL`
+- `GEMINI_API_KEY`
+- `GEMINI_MODEL`
 - `EMAIL_BOT_NOTIFY_EMAIL`
 - `EMAIL_BOT_MAX_MESSAGES`
 - `EMAIL_BOT_LOOKBACK_DAYS`
 
-If `OPENAI_API_KEY` is missing, the bot still works with a safe template reply. It will be less natural, but it will not fail.
+If `GEMINI_API_KEY` is missing, the bot still works with a safe template reply. It will be less natural, but it will not fail.
 
 ## How To Run Manually
 
