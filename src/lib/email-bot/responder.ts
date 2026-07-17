@@ -148,8 +148,50 @@ function extractGeminiText(data: unknown) {
   );
 }
 
-function getGeminiModels(preferredModel: string) {
-  return Array.from(new Set([preferredModel.trim(), "gemini-2.5-flash-lite", "gemini-2.5-flash"].filter(Boolean)));
+type GeminiModelListResponse = {
+  models?: Array<{
+    name?: string;
+    baseModelId?: string;
+    supportedActions?: string[];
+    supportedGenerationMethods?: string[];
+  }>;
+};
+
+function normalizeGeminiModelName(model: string) {
+  return model.replace(/^models\//, "").trim();
+}
+
+async function listAvailableGeminiModels(apiKey: string) {
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`);
+    if (!response.ok) return [];
+
+    const data = (await response.json()) as GeminiModelListResponse;
+    return (data.models || [])
+      .filter((model) => {
+        const actions = [...(model.supportedActions || []), ...(model.supportedGenerationMethods || [])];
+        return actions.includes("generateContent");
+      })
+      .flatMap((model) => [model.baseModelId, model.name].filter(Boolean).map((name) => normalizeGeminiModelName(name || "")));
+  } catch {
+    return [];
+  }
+}
+
+async function getGeminiModels(apiKey: string, preferredModel: string) {
+  const knownModels = [
+    preferredModel,
+    "gemini-flash-latest",
+    "gemini-2.5-flash-lite",
+    "gemini-2.5-flash",
+    "gemini-2.0-flash",
+    "gemini-1.5-flash",
+  ];
+
+  const availableModels = await listAvailableGeminiModels(apiKey);
+  const usefulAvailableModels = availableModels.filter((model) => /flash|lite|pro/i.test(model));
+
+  return Array.from(new Set([...knownModels, ...usefulAvailableModels].map(normalizeGeminiModelName).filter(Boolean)));
 }
 
 async function requestGeminiDecision(apiKey: string, model: string, prompt: string) {
@@ -210,7 +252,7 @@ export async function createLeadDecision(email: ParsedEmail, config: EmailBotCon
 
   const errors: string[] = [];
 
-  for (const model of getGeminiModels(config.gemini.model)) {
+  for (const model of await getGeminiModels(config.gemini.apiKey, config.gemini.model)) {
     const response = await requestGeminiDecision(config.gemini.apiKey, model, prompt);
 
     if (!response.ok) {
