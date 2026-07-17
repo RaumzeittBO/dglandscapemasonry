@@ -2,7 +2,7 @@
 
 import Script from "next/script";
 import { useEffect } from "react";
-import { siteConfig } from "@/config/siteConfig";
+import { getEmailUrl, getMailtoUrl, siteConfig } from "@/config/siteConfig";
 
 // Replace these with your actual IDs when ready
 const GTM_ID = "AW-18018618559"; 
@@ -11,6 +11,21 @@ const EMAIL_CONVERSION_ID = "AW-18018618559/email-conversion";
 
 export default function GoogleAnalytics() {
   useEffect(() => {
+    const isMobileDevice = () => /Android|iPhone|iPad|iPod|Mobile/i.test(window.navigator.userAgent);
+
+    const openMobileEmailComposer = () => {
+      const mailtoUrl = getMailtoUrl();
+      const gmailWebUrl = getEmailUrl();
+
+      window.location.href = mailtoUrl;
+
+      window.setTimeout(() => {
+        if (document.visibilityState === "visible") {
+          window.location.href = gmailWebUrl;
+        }
+      }, 1200);
+    };
+
     const handleGlobalClick = (e: MouseEvent) => {
       // Find the closest anchor tag
       const target = (e.target as HTMLElement).closest("a");
@@ -40,6 +55,11 @@ export default function GoogleAnalytics() {
             send_to: EMAIL_CONVERSION_ID,
           });
           console.debug("Google Ads: Email Conversion Event Fired");
+        }
+
+        if (isMobileDevice()) {
+          e.preventDefault();
+          openMobileEmailComposer();
         }
       }
     };
