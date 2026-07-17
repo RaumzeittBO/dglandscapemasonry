@@ -10,7 +10,9 @@ function isAuthorized(request: NextRequest) {
   if (!config.secret) return false;
 
   const authorization = request.headers.get("authorization");
-  return authorization === `Bearer ${config.secret}`;
+  const querySecret = request.nextUrl.searchParams.get("secret");
+
+  return authorization === `Bearer ${config.secret}` || querySecret === config.secret;
 }
 
 export async function POST(request: NextRequest) {
@@ -31,12 +33,26 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
-  return NextResponse.json(
-    {
-      ok: true,
-      message: "D&G email bot endpoint is installed. Use POST with Authorization bearer token to run it.",
-    },
-    { status: 200 }
-  );
+export async function GET(request: NextRequest) {
+  if (!isAuthorized(request)) {
+    return NextResponse.json(
+      {
+        ok: true,
+        message: "D&G email bot endpoint is installed. Add ?secret=EMAIL_BOT_SECRET or use POST with Authorization bearer token to run it.",
+      },
+      { status: 200 }
+    );
+  }
+
+  try {
+    const result = await runEmailBot();
+    return NextResponse.json(result);
+  } catch (error) {
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Unknown email bot error",
+      },
+      { status: 500 }
+    );
+  }
 }

@@ -42,6 +42,14 @@ curl -X POST https://YOUR_DOMAIN/api/email-bot/run \
   -H "Authorization: Bearer YOUR_EMAIL_BOT_SECRET"
 ```
 
+For simple external cron services, you can also call:
+
+```text
+https://YOUR_DOMAIN/api/email-bot/run?secret=YOUR_EMAIL_BOT_SECRET
+```
+
+Use a long random secret because URLs can appear in logs.
+
 ## Gmail OAuth Setup
 
 You need a Google Cloud OAuth app with Gmail API enabled.
