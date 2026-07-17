@@ -26,12 +26,14 @@ Set these in Vercel Project Settings > Environment Variables:
 Optional:
 
 - `GEMINI_API_KEY`
-- `GEMINI_MODEL`
+- `GEMINI_MODEL` recommended: `gemini-2.5-flash-lite`
 - `EMAIL_BOT_NOTIFY_EMAIL`
 - `EMAIL_BOT_MAX_MESSAGES`
 - `EMAIL_BOT_LOOKBACK_DAYS`
 
 If `GEMINI_API_KEY` is missing, the bot still works with a safe template reply. It will be less natural, but it will not fail.
+
+Vendor outreach for web design, SEO, marketing, lead generation, software, outsourcing, and similar services is ignored before the bot calls Gemini. These emails are labeled `Bot Ignored` instead of receiving drafts.
 
 ## How To Run Manually
 

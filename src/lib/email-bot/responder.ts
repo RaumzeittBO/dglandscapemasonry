@@ -17,8 +17,76 @@ function safeJsonParse(value: string): LeadDecision | null {
   }
 }
 
+function getEmailText(email: ParsedEmail) {
+  return `${email.from}\n${email.subject}\n${email.text}\n${email.snippet || ""}`.toLowerCase();
+}
+
+function getBlockedOutreachReason(email: ParsedEmail) {
+  const text = getEmailText(email);
+  const from = email.from.toLowerCase();
+
+  const blockedSenders = [
+    "noreply",
+    "no-reply",
+    "donotreply",
+    "google",
+    "openai",
+    "mailchimp",
+    "constantcontact",
+    "hubspot",
+  ];
+
+  if (blockedSenders.some((sender) => from.includes(sender))) {
+    return "Automated platform or notification email.";
+  }
+
+  const vendorPhrases = [
+    "website design",
+    "web design",
+    "redesign your website",
+    "improve your website",
+    "new website",
+    "seo",
+    "search engine optimization",
+    "google ranking",
+    "rank higher",
+    "digital marketing",
+    "online marketing",
+    "social media marketing",
+    "lead generation",
+    "qualified leads",
+    "grow your business",
+    "increase your sales",
+    "backlinks",
+    "domain authority",
+    "logo design",
+    "app development",
+    "outsourcing",
+    "virtual assistant",
+    "sponsored post",
+    "guest post",
+  ];
+
+  if (vendorPhrases.some((phrase) => text.includes(phrase))) {
+    return "Vendor outreach for web, SEO, marketing, or business services.";
+  }
+
+  return null;
+}
+
 function fallbackDecision(email: ParsedEmail): LeadDecision {
-  const text = `${email.subject}\n${email.text}\n${email.snippet || ""}`.toLowerCase();
+  const blockedReason = getBlockedOutreachReason(email);
+  if (blockedReason) {
+    return {
+      isLead: false,
+      needsHumanReview: false,
+      summary: blockedReason,
+      missingInfo: [],
+      reply: "",
+    };
+  }
+
+  const text = getEmailText(email);
   const leadKeywords = [
     "estimate",
     "quote",
@@ -81,6 +149,17 @@ function extractGeminiText(data: unknown) {
 }
 
 export async function createLeadDecision(email: ParsedEmail, config: EmailBotConfig): Promise<LeadDecision> {
+  const blockedReason = getBlockedOutreachReason(email);
+  if (blockedReason) {
+    return {
+      isLead: false,
+      needsHumanReview: false,
+      summary: blockedReason,
+      missingInfo: [],
+      reply: "",
+    };
+  }
+
   if (!config.gemini.apiKey) return fallbackDecision(email);
 
   const prompt = [
@@ -89,7 +168,10 @@ export async function createLeadDecision(email: ParsedEmail, config: EmailBotCon
     "Never promise final pricing. Never invent calendar availability.",
     "Return only valid JSON with keys: isLead boolean, needsHumanReview boolean, summary string, missingInfo string[], reply string.",
     "The reply must be warm, professional, and ask for missing info needed for a free estimate.",
-    "If the message is spam, vendor outreach, legal, angry, or unclear, set needsHumanReview true.",
+    "If the sender wants to hire D&G for landscaping, lawn care, masonry, patios, walkways, retaining walls, cleanup, or an outdoor project, set isLead true.",
+    "If the message offers web design, SEO, marketing, ads, lead generation, software, outsourcing, guest posts, or other vendor services, set isLead false and needsHumanReview false.",
+    "If the message is legal, angry, an existing customer complaint, or unclear, set needsHumanReview true.",
+    "The reply must directly address what the customer asked for instead of using a generic template.",
     "",
     `From: ${email.from}`,
     `Subject: ${email.subject}`,

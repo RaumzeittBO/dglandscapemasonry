@@ -6,6 +6,7 @@ const PROCESSED_LABEL = "Bot Processed";
 const LEAD_LABEL = "Website Leads";
 const REVIEW_LABEL = "Needs Human Review";
 const DRAFT_READY_LABEL = "Draft Reply Ready";
+const IGNORED_LABEL = "Bot Ignored";
 
 export type EmailBotResult = {
   mode: string;
@@ -72,7 +73,7 @@ export async function runEmailBot(): Promise<EmailBotResult> {
     const decision = await createLeadDecision(email, config);
 
     if (!decision.isLead) {
-      await gmail.applyLabels(email.id, [PROCESSED_LABEL, REVIEW_LABEL]);
+      await gmail.applyLabels(email.id, [PROCESSED_LABEL, decision.needsHumanReview ? REVIEW_LABEL : IGNORED_LABEL]);
       output.skipped += 1;
       output.results.push({
         messageId: email.id,
@@ -80,7 +81,7 @@ export async function runEmailBot(): Promise<EmailBotResult> {
         from: email.from,
         action: "skipped",
         summary: decision.summary,
-        needsHumanReview: true,
+        needsHumanReview: decision.needsHumanReview,
       });
       continue;
     }
