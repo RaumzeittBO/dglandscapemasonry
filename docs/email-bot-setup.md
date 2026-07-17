@@ -75,6 +75,8 @@ The refresh token must belong to:
 5. Add scheduling/calendar logic.
 6. Only then consider `EMAIL_BOT_MODE=send`.
 
+In `send` mode, the bot still does not send every reply. Scheduling, appointment availability, exact pricing, contracts, complaints, legal questions, and unclear messages are forced into human review. Those messages get a draft plus an internal notification instead of an automatic reply.
+
 ## Owner Notifications
 
 Set `EMAIL_BOT_NOTIFY_EMAIL` to send an internal summary whenever a draft is created.

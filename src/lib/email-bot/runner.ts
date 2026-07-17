@@ -38,7 +38,7 @@ function buildSearchQuery(lookbackDays: number) {
 
 function buildNotificationBody(result: EmailBotResult["results"][number]) {
   return [
-    "D&G email bot processed a lead.",
+    result.needsHumanReview ? "D&G email bot needs human help with this lead." : "D&G email bot processed a lead.",
     "",
     `Action: ${result.action}`,
     `From: ${result.from}`,
@@ -120,7 +120,8 @@ export async function runEmailBot(): Promise<EmailBotResult> {
     output.results.push(result);
 
     if (config.notifyEmail) {
-      await gmail.sendInternalNotification(config.notifyEmail, `New D&G lead: ${email.subject}`, buildNotificationBody(result));
+      const notificationSubject = decision.needsHumanReview ? `Human review needed: ${email.subject}` : `New D&G lead: ${email.subject}`;
+      await gmail.sendInternalNotification(config.notifyEmail, notificationSubject, buildNotificationBody(result));
     }
   }
 

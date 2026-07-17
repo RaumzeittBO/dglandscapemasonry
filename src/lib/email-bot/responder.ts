@@ -1,5 +1,6 @@
 import type { EmailBotConfig } from "./config";
 import type { ParsedEmail } from "./gmail";
+import { siteConfig } from "@/config/siteConfig";
 
 export type LeadDecision = {
   isLead: boolean;
@@ -74,6 +75,59 @@ function getBlockedOutreachReason(email: ParsedEmail) {
   return null;
 }
 
+function getHumanHandoffReason(email: ParsedEmail) {
+  const text = getEmailText(email);
+  const schedulingPhrases = [
+    "schedule",
+    "appointment",
+    "book",
+    "booking",
+    "site visit",
+    "visit",
+    "come by",
+    "come take a look",
+    "come look",
+    "take a look",
+    "availability",
+    "available",
+    "when can you come",
+    "can you come",
+    "what time",
+    "tomorrow",
+    "today",
+    "next week",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday",
+    "agendar",
+    "cita",
+    "visita",
+    "horario",
+    "cuando pueden",
+  ];
+
+  if (schedulingPhrases.some((phrase) => text.includes(phrase))) {
+    return "Customer is asking about scheduling or availability. Human should confirm the appointment.";
+  }
+
+  return null;
+}
+
+function withForcedHumanReview(email: ParsedEmail, decision: LeadDecision): LeadDecision {
+  const handoffReason = getHumanHandoffReason(email);
+  if (!handoffReason || !decision.isLead) return decision;
+
+  return {
+    ...decision,
+    needsHumanReview: true,
+    summary: `${decision.summary} ${handoffReason}`,
+  };
+}
+
 function fallbackDecision(email: ParsedEmail): LeadDecision {
   const blockedReason = getBlockedOutreachReason(email);
   if (blockedReason) {
@@ -103,7 +157,7 @@ function fallbackDecision(email: ParsedEmail): LeadDecision {
   ];
   const isLead = leadKeywords.some((keyword) => text.includes(keyword));
 
-  return {
+  return withForcedHumanReview(email, {
     isLead,
     needsHumanReview: !isLead,
     summary: isLead ? "Potential landscaping or masonry lead." : "Message does not clearly look like a new lead.",
@@ -127,7 +181,7 @@ function fallbackDecision(email: ParsedEmail): LeadDecision {
       "D&G Landscape and Masonry Inc.",
       "(413) 277-5937",
     ].join("\n"),
-  };
+  });
 }
 
 function extractGeminiText(data: unknown) {
@@ -238,9 +292,18 @@ export async function createLeadDecision(email: ParsedEmail, config: EmailBotCon
     "Never promise final pricing. Never invent calendar availability.",
     "Return only valid JSON with keys: isLead boolean, needsHumanReview boolean, summary string, missingInfo string[], reply string.",
     "The reply must be warm, professional, and ask for missing info needed for a free estimate.",
+    `Company phone: ${siteConfig.phoneDisplay}.`,
+    `Primary email: ${siteConfig.primaryEmail}.`,
+    `Published service areas: ${siteConfig.serviceAreas.join(", ")} and nearby towns.`,
+    "D&G normally provides free estimates by visiting the property. Do not give final prices by email.",
+    "If the customer gives an address or city inside the published service areas, acknowledge the area naturally and continue collecting missing estimate details.",
+    "If the customer is near but not exactly listed, say D&G may still serve nearby towns and ask for the full property address/city.",
+    "If the customer is clearly far outside Massachusetts/service area, set needsHumanReview true.",
     "If the sender wants to hire D&G for landscaping, lawn care, masonry, patios, walkways, retaining walls, cleanup, or an outdoor project, set isLead true.",
     "If the message offers web design, SEO, marketing, ads, lead generation, software, outsourcing, guest posts, or other vendor services, set isLead false and needsHumanReview false.",
-    "If the message is legal, angry, an existing customer complaint, or unclear, set needsHumanReview true.",
+    "If the customer asks to schedule, book, choose a day/time, confirm availability, or asks when someone can come to the property, set isLead true and needsHumanReview true.",
+    "If the message is legal, angry, an existing customer complaint, asks about warranties, permits, insurance, contracts, exact price, discounts beyond the published offer, or is unclear, set needsHumanReview true.",
+    "If needsHumanReview is true, still draft a short helpful reply for the owner to review, but do not claim that a visit time is confirmed.",
     "The reply must directly address what the customer asked for instead of using a generic template.",
     "",
     `From: ${email.from}`,
@@ -262,7 +325,7 @@ export async function createLeadDecision(email: ParsedEmail, config: EmailBotCon
 
     const text = extractGeminiText(await response.json());
     const parsed = safeJsonParse(text);
-    if (parsed) return parsed;
+    if (parsed) return withForcedHumanReview(email, parsed);
 
     errors.push(`${model}: invalid JSON`);
   }
