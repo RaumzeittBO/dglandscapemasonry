@@ -6,6 +6,7 @@ export type EmailBotConfig = {
   lookbackDays: number;
   secret?: string;
   notifyEmail?: string;
+  notifyEmails: string[];
   gmail: {
     clientId?: string;
     clientSecret?: string;
@@ -23,15 +24,25 @@ function readInteger(value: string | undefined, fallback: number) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
+function readEmailList(value: string | undefined) {
+  if (!value) return [];
+  return value
+    .split(",")
+    .map((email) => email.trim())
+    .filter(Boolean);
+}
+
 export function getEmailBotConfig(): EmailBotConfig {
   const mode = process.env.EMAIL_BOT_MODE === "send" ? "send" : "draft";
+  const notifyEmails = readEmailList(process.env.EMAIL_BOT_NOTIFY_EMAIL);
 
   return {
     mode,
     maxMessages: readInteger(process.env.EMAIL_BOT_MAX_MESSAGES, 5),
     lookbackDays: readInteger(process.env.EMAIL_BOT_LOOKBACK_DAYS, 14),
     secret: process.env.EMAIL_BOT_SECRET,
-    notifyEmail: process.env.EMAIL_BOT_NOTIFY_EMAIL,
+    notifyEmail: notifyEmails[0],
+    notifyEmails,
     gmail: {
       clientId: process.env.GMAIL_CLIENT_ID,
       clientSecret: process.env.GMAIL_CLIENT_SECRET,

@@ -81,6 +81,12 @@ In `send` mode, the bot still does not send every reply. Scheduling, appointment
 
 Set `EMAIL_BOT_NOTIFY_EMAIL` to send an internal summary whenever a draft is created.
 
+Multiple owner emails are supported. Separate them with commas:
+
+```text
+EMAIL_BOT_NOTIFY_EMAIL=owner1@example.com,owner2@example.com,manager@example.com
+```
+
 For WhatsApp notifications, use WhatsApp Business API or Twilio later.
 
 For Telegram notifications, add a Telegram bot token and chat id later. Telegram is usually simpler than WhatsApp for internal alerts.

@@ -119,9 +119,11 @@ export async function runEmailBot(): Promise<EmailBotResult> {
     };
     output.results.push(result);
 
-    if (config.notifyEmail) {
+    if (config.notifyEmails.length > 0) {
       const notificationSubject = decision.needsHumanReview ? `Human review needed: ${email.subject}` : `New D&G lead: ${email.subject}`;
-      await gmail.sendInternalNotification(config.notifyEmail, notificationSubject, buildNotificationBody(result));
+      await Promise.all(
+        config.notifyEmails.map((notifyEmail) => gmail.sendInternalNotification(notifyEmail, notificationSubject, buildNotificationBody(result)))
+      );
     }
   }
 
