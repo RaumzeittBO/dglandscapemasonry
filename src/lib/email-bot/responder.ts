@@ -148,6 +148,34 @@ function extractGeminiText(data: unknown) {
   );
 }
 
+function getGeminiModels(preferredModel: string) {
+  return Array.from(new Set([preferredModel.trim(), "gemini-2.5-flash-lite", "gemini-2.5-flash"].filter(Boolean)));
+}
+
+async function requestGeminiDecision(apiKey: string, model: string, prompt: string) {
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
+    method: "POST",
+    headers: {
+      "x-goog-api-key": apiKey,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: prompt }],
+        },
+      ],
+      generationConfig: {
+        response_mime_type: "application/json",
+        temperature: 0.3,
+      },
+    }),
+  });
+
+  return response;
+}
+
 export async function createLeadDecision(email: ParsedEmail, config: EmailBotConfig): Promise<LeadDecision> {
   const blockedReason = getBlockedOutreachReason(email);
   if (blockedReason) {
@@ -180,43 +208,26 @@ export async function createLeadDecision(email: ParsedEmail, config: EmailBotCon
     email.text,
   ].join("\n");
 
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${config.gemini.model}:generateContent`, {
-    method: "POST",
-    headers: {
-      "x-goog-api-key": config.gemini.apiKey,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: prompt }],
-        },
-      ],
-      generationConfig: {
-        response_mime_type: "application/json",
-        temperature: 0.3,
-      },
-    }),
-  });
+  const errors: string[] = [];
 
-  if (!response.ok) {
-    return {
-      ...fallbackDecision(email),
-      needsHumanReview: true,
-      summary: `Gemini request failed. Fallback draft created. Status: ${response.status}`,
-    };
+  for (const model of getGeminiModels(config.gemini.model)) {
+    const response = await requestGeminiDecision(config.gemini.apiKey, model, prompt);
+
+    if (!response.ok) {
+      errors.push(`${model}: ${response.status}`);
+      continue;
+    }
+
+    const text = extractGeminiText(await response.json());
+    const parsed = safeJsonParse(text);
+    if (parsed) return parsed;
+
+    errors.push(`${model}: invalid JSON`);
   }
 
-  const text = extractGeminiText(await response.json());
-  const parsed = safeJsonParse(text);
-  if (!parsed) {
-    return {
-      ...fallbackDecision(email),
-      needsHumanReview: true,
-      summary: "Gemini returned invalid JSON. Fallback draft created.",
-    };
-  }
-
-  return parsed;
+  return {
+    ...fallbackDecision(email),
+    needsHumanReview: true,
+    summary: `Gemini request failed. Fallback draft created. ${errors.join("; ")}`,
+  };
 }
