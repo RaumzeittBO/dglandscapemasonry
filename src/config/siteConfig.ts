@@ -31,7 +31,7 @@ export function getSmsUrl() {
 }
 
 export function getEmailUrl() {
-  const subject = "Free estimate request - D&G Landscape and Masonry";
+  const subject = "[Website Lead] Free estimate request - D&G Landscape and Masonry";
   const body = [
     "Hi D&G Landscape and Masonry,",
     "",
@@ -61,6 +61,23 @@ export function getEmailUrl() {
 }
 
 export function getMailtoUrl() {
-  const subject = "Free estimate request - D&G Landscape and Masonry";
-  return `mailto:${siteConfig.primaryEmail}?subject=${encodeURIComponent(subject)}`;
+  const subject = "[Website Lead] Free estimate request - D&G Landscape and Masonry";
+  const body = [
+    "Hi D&G Landscape and Masonry,",
+    "",
+    "I would like a free estimate for my property.",
+    "",
+    "Name:",
+    "Phone number:",
+    "Property address / city:",
+    "Best days or times for a site visit:",
+    "",
+    "Project details:",
+    "",
+    "Please attach photos of the area if you can.",
+    "",
+    "Thank you.",
+  ].join("\n");
+
+  return `mailto:${siteConfig.primaryEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }

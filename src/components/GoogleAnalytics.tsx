@@ -34,7 +34,7 @@ export default function GoogleAnalytics() {
       }
 
       // Check if clicked link is an email link
-      if (href === `mailto:${primaryEmail}` || href.includes(`to=${encodeURIComponent(primaryEmail)}`)) {
+      if (href.startsWith(`mailto:${primaryEmail}`) || href.includes(`to=${encodeURIComponent(primaryEmail)}`)) {
         if (typeof window.gtag === "function") {
           window.gtag("event", "conversion", {
             send_to: EMAIL_CONVERSION_ID,

@@ -89,7 +89,15 @@ export default function FinalCTA() {
                         <h4 className="text-xs font-black uppercase tracking-[0.18em] text-moss">Contact</h4>
                         <div className="mt-4 space-y-2 text-sm font-semibold text-charcoal/70">
                             <a href={getCallUrl()} className="block hover:text-moss">{siteConfig.phoneDisplay}</a>
-                            <a href={`mailto:${siteConfig.primaryEmail}`} className="block hover:text-moss">{siteConfig.primaryEmail}</a>
+                            <a
+                                href={getEmailUrl()}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                onClick={reportConversion}
+                                className="block hover:text-moss"
+                            >
+                                {siteConfig.primaryEmail}
+                            </a>
                         </div>
                     </div>
 
