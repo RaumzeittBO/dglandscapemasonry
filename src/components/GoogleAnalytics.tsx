@@ -40,6 +40,10 @@ export default function GoogleAnalytics() {
 
       // Check if clicked link is a phone call link
       if (href === `tel:${phoneE164}` || href === `sms:${phoneE164}`) {
+        window.fbq?.("track", "Contact", {
+          content_name: href.startsWith("tel:") ? "Phone call click" : "SMS click",
+        });
+
         if (typeof window.gtag === "function") {
           window.gtag("event", "conversion", {
             send_to: CALL_CONVERSION_ID,
@@ -50,6 +54,10 @@ export default function GoogleAnalytics() {
 
       // Check if clicked link is an email link
       if (href.startsWith(`mailto:${primaryEmail}`) || href.includes(`to=${encodeURIComponent(primaryEmail)}`)) {
+        window.fbq?.("track", "Contact", {
+          content_name: "Email click",
+        });
+
         if (typeof window.gtag === "function") {
           window.gtag("event", "conversion", {
             send_to: EMAIL_CONVERSION_ID,
