@@ -30,6 +30,14 @@ export function getSmsUrl() {
   return `sms:${siteConfig.phoneE164}`;
 }
 
+export function getEstimateFormUrl() {
+  return "/#free-estimate";
+}
+
+export function getPrivacyPolicyUrl() {
+  return "/privacy-policy";
+}
+
 export function getEmailUrl() {
   const subject = "[Website Lead] Free estimate request - D&G Landscape and Masonry";
   const body = [

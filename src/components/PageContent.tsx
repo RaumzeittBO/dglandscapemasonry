@@ -10,6 +10,7 @@ import Process from "@/components/Process";
 import Testimonials from "@/components/Testimonials";
 import ServiceAreas from "@/components/ServiceAreas";
 import ServiceAreaText from "@/components/ServiceAreaText";
+import EstimateForm from "@/components/EstimateForm";
 import BookingCTA from "@/components/BookingCTA";
 import FinalCTA from "@/components/FinalCTA";
 import { useScrollReveal } from "@/hooks/useGsapAnimations";
@@ -29,6 +30,7 @@ export default function PageContent() {
                 <Testimonials />
                 <ServiceAreas />
                 <ServiceAreaText />
+                <EstimateForm />
                 <BookingCTA />
                 <FinalCTA />
             </main>

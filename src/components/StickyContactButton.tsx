@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { siteConfig, getCallUrl, getSmsUrl, getEmailUrl } from "@/config/siteConfig";
+import { siteConfig, getCallUrl, getSmsUrl, getEstimateFormUrl } from "@/config/siteConfig";
 import { reportConversion } from "@/utils/conversion";
 
 export default function StickyContactButton() {
@@ -43,23 +43,19 @@ export default function StickyContactButton() {
                 </a>
             </div>
 
-            {/* Main Email FAB (Primary) flexed conditionally */}
-            {siteConfig.primaryEmail && (
-                <a
-                    href={getEmailUrl()}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={reportConversion}
-                    className="group flex items-center gap-2 rounded-full bg-gold px-5 py-3.5 font-black text-ink shadow-[0_18px_45px_rgba(210,185,128,0.28)] transition-all duration-300 hover:bg-white hover:shadow-xl hover:scale-105"
-                    aria-label="Email us"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="2" y="4" width="20" height="16" rx="2" />
-                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                    </svg>
-                    <span className="hidden sm:inline">Free Estimate</span>
-                </a>
-            )}
+            <a
+                href={getEstimateFormUrl()}
+                className="group flex items-center gap-2 rounded-full bg-gold px-5 py-3.5 font-black text-ink shadow-[0_18px_45px_rgba(210,185,128,0.28)] transition-all duration-300 hover:bg-white hover:shadow-xl hover:scale-105"
+                aria-label="Get a free estimate"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <path d="M14 2v6h6" />
+                    <path d="M9 15h6" />
+                    <path d="M9 11h2" />
+                </svg>
+                <span className="hidden sm:inline">Free Estimate</span>
+            </a>
 
             {/* Toggle for Call/Text/Email options */}
             <button

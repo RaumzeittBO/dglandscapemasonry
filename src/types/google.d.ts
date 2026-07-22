@@ -3,5 +3,5 @@ type GtagCommand = "config" | "event" | "js";
 interface Window {
   gtag?: (command: GtagCommand, target: string | Date, params?: Record<string, unknown>) => void;
   gtag_report_conversion?: (url?: string) => false;
-  fbq?: (command: "init" | "track", eventName: string, params?: Record<string, unknown>) => void;
+  fbq?: (command: "init" | "track", eventName: string, params?: Record<string, unknown>, options?: Record<string, unknown>) => void;
 }

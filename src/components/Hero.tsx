@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import gsap from "gsap";
-import { siteConfig, getCallUrl, getEmailUrl } from "@/config/siteConfig";
+import { getCallUrl, getEstimateFormUrl } from "@/config/siteConfig";
 import { reportConversion } from "@/utils/conversion";
 
 const heroImages = [
@@ -159,18 +159,13 @@ export default function Hero() {
                     </p>
 
                     <div className="hero-reveal mt-7 flex flex-col gap-3 sm:flex-row">
-                        {siteConfig.primaryEmail && (
-                            <a
-                                href={getEmailUrl()}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={reportConversion}
-                                className="group inline-flex items-center justify-center gap-3 rounded-full bg-gold px-7 py-4 text-base font-black text-ink shadow-[0_22px_50px_rgba(210,185,128,0.24)] transition-all duration-300 hover:-translate-y-1 hover:bg-white"
-                            >
-                                Email for a free estimate
-                                <span className="transition-transform group-hover:translate-x-1">-&gt;</span>
-                            </a>
-                        )}
+                        <a
+                            href={getEstimateFormUrl()}
+                            className="group inline-flex items-center justify-center gap-3 rounded-full bg-gold px-7 py-4 text-base font-black text-ink shadow-[0_22px_50px_rgba(210,185,128,0.24)] transition-all duration-300 hover:-translate-y-1 hover:bg-white"
+                        >
+                            Get a free estimate
+                            <span className="transition-transform group-hover:translate-x-1">-&gt;</span>
+                        </a>
                         <a
                             href={getCallUrl()}
                             onClick={reportConversion}

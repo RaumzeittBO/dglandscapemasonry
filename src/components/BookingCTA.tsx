@@ -1,7 +1,7 @@
 "use client";
 
 import { useScrollReveal } from "@/hooks/useGsapAnimations";
-import { siteConfig, getCallUrl, getEmailUrl } from "@/config/siteConfig";
+import { siteConfig, getCallUrl, getEstimateFormUrl } from "@/config/siteConfig";
 import { reportConversion } from "@/utils/conversion";
 
 export default function BookingCTA() {
@@ -23,17 +23,12 @@ export default function BookingCTA() {
                         </p>
 
                         <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-                            {siteConfig.primaryEmail && (
-                                <a
-                                    href={getEmailUrl()}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onClick={reportConversion}
-                                    className="inline-flex items-center justify-center rounded-full bg-gold px-7 py-4 text-base font-black text-ink transition-all duration-300 hover:-translate-y-1 hover:bg-white"
-                                >
-                                    Email project details
-                                </a>
-                            )}
+                            <a
+                                href={getEstimateFormUrl()}
+                                className="inline-flex items-center justify-center rounded-full bg-gold px-7 py-4 text-base font-black text-ink transition-all duration-300 hover:-translate-y-1 hover:bg-white"
+                            >
+                                Request an estimate
+                            </a>
                             <a
                                 href={getCallUrl()}
                                 onClick={reportConversion}

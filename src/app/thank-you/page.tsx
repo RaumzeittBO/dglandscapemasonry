@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import FinalCTA from "@/components/FinalCTA";
+import { getCallUrl, siteConfig } from "@/config/siteConfig";
 
 export default function ThankYouPage() {
     return (
@@ -17,12 +18,23 @@ export default function ThankYouPage() {
                     </div>
                     
                     <h1 className="font-heading text-4xl font-bold text-charcoal sm:text-5xl md:text-6xl mb-6">
-                        Thank You!
+                        Thanks — We Received Your Project Request
                     </h1>
                     
                     <p className="text-xl text-neutral mb-10 leading-relaxed">
-                        Your message has been received. We will get back to you as soon as possible to discuss your landscaping and masonry needs.
+                        Our team will review your information and contact you shortly to discuss your free on-site estimate.
                     </p>
+
+                    <p className="mb-8 text-base font-semibold leading-7 text-charcoal/62">
+                        Please check your email for our response.
+                    </p>
+
+                    <div className="mb-10 rounded-2xl border border-charcoal/8 bg-mist p-5">
+                        <p className="text-sm font-black uppercase tracking-[0.16em] text-moss">Need immediate assistance?</p>
+                        <a href={getCallUrl()} className="mt-2 inline-flex text-xl font-black text-charcoal hover:text-moss">
+                            Call or Text: {siteConfig.phoneDisplay}
+                        </a>
+                    </div>
                     
                     <Link
                         href="/"
@@ -32,7 +44,7 @@ export default function ThankYouPage() {
                             <line x1="19" y1="12" x2="5" y2="12" />
                             <polyline points="12 19 5 12 12 5" />
                         </svg>
-                        Return Home
+                        Return to Home
                     </Link>
                 </div>
             </main>
