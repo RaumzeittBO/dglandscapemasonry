@@ -2,16 +2,12 @@ import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { siteConfig } from "@/config/siteConfig";
 import { assertGmailConfigured, getEmailBotConfig } from "@/lib/email-bot/config";
-import { GmailClient, type GmailAttachment } from "@/lib/email-bot/gmail";
+import { GmailClient } from "@/lib/email-bot/gmail";
 import { sendMetaLeadEvent } from "@/lib/estimate/metaCapi";
 import { validateEstimateForm, type EstimateLead } from "@/lib/estimate/schema";
 
 export const runtime = "nodejs";
 
-const MAX_FILES = 5;
-const MAX_FILE_SIZE = 4 * 1024 * 1024;
-const MAX_TOTAL_FILE_SIZE = 12 * 1024 * 1024;
-const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const RATE_LIMIT_MAX = 4;
 const DUPLICATE_WINDOW_MS = 15 * 60 * 1000;
@@ -36,55 +32,27 @@ function isRateLimited(ip: string) {
   return current.count > RATE_LIMIT_MAX;
 }
 
-function isDuplicate(lead: EstimateLead) {
+function getLeadFingerprint(lead: EstimateLead) {
+  return crypto
+    .createHash("sha256")
+    .update([lead.email, lead.normalizedPhone, lead.cityOrZip, lead.projectType, lead.projectDetails].join("|").toLowerCase())
+    .digest("hex");
+}
+
+function cleanDuplicateStore() {
   const now = Date.now();
   for (const [key, expiresAt] of duplicateStore.entries()) {
     if (expiresAt < now) duplicateStore.delete(key);
   }
-
-  const fingerprint = crypto
-    .createHash("sha256")
-    .update([lead.email, lead.normalizedPhone, lead.cityOrZip, lead.projectType, lead.projectDetails].join("|").toLowerCase())
-    .digest("hex");
-
-  if (duplicateStore.has(fingerprint)) return true;
-  duplicateStore.set(fingerprint, now + DUPLICATE_WINDOW_MS);
-  return false;
 }
 
-async function parseAttachments(formData: FormData) {
-  const files = formData.getAll("photos").filter((value): value is File => value instanceof File && value.size > 0);
-  const errors: string[] = [];
-  const attachments: GmailAttachment[] = [];
+function isDuplicateFingerprint(fingerprint: string) {
+  cleanDuplicateStore();
+  return duplicateStore.has(fingerprint);
+}
 
-  if (files.length > MAX_FILES) {
-    errors.push("Please attach no more than 5 photos.");
-  }
-
-  let totalSize = 0;
-  for (const file of files.slice(0, MAX_FILES)) {
-    totalSize += file.size;
-    if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
-      errors.push(`${file.name} must be JPG, PNG, or WEBP.`);
-      continue;
-    }
-    if (file.size > MAX_FILE_SIZE) {
-      errors.push(`${file.name} is larger than 4 MB.`);
-      continue;
-    }
-
-    attachments.push({
-      filename: file.name.replace(/[^\w.\- ]/g, "_").slice(0, 120),
-      mimeType: file.type,
-      data: Buffer.from(await file.arrayBuffer()),
-    });
-  }
-
-  if (totalSize > MAX_TOTAL_FILE_SIZE) {
-    return { attachments: [], errors: ["Total photo upload size is too large."] };
-  }
-
-  return { attachments, errors };
+function markDuplicateFingerprint(fingerprint: string) {
+  duplicateStore.set(fingerprint, Date.now() + DUPLICATE_WINDOW_MS);
 }
 
 function getNewYorkTimestamp() {
@@ -95,12 +63,7 @@ function getNewYorkTimestamp() {
   }).format(new Date());
 }
 
-function buildLeadEmailBody(lead: EstimateLead, eventId: string, attachments: GmailAttachment[]) {
-  const photoText =
-    attachments.length > 0
-      ? attachments.map((file) => `${file.filename} (${Math.round(file.data.byteLength / 1024)} KB)`).join("\n")
-      : "No photos attached.";
-
+function buildLeadEmailBody(lead: EstimateLead, eventId: string) {
   return [
     "NEW FREE ESTIMATE REQUEST",
     "",
@@ -127,9 +90,6 @@ function buildLeadEmailBody(lead: EstimateLead, eventId: string, attachments: Gm
     "",
     "Preferred Estimate Timing:",
     lead.preferredEstimateTiming || "Not specified",
-    "",
-    "Photos:",
-    photoText,
     "",
     "MARKETING ATTRIBUTION",
     "",
@@ -163,24 +123,26 @@ function buildLeadEmailBody(lead: EstimateLead, eventId: string, attachments: Gm
 }
 
 export async function POST(request: NextRequest) {
+  const eventDate = new Date().toISOString();
   try {
     const ip = getClientIp(request);
     if (isRateLimited(ip)) {
+      console.warn("Estimate request rate limited", { date: eventDate, ipHash: crypto.createHash("sha256").update(ip).digest("hex").slice(0, 12) });
       return NextResponse.json({ ok: false, error: "Too many requests. Please try again later." }, { status: 429 });
     }
 
-    const formData = await request.formData();
-    const validation = validateEstimateForm(formData);
+    const input = (await request.json()) as Record<string, unknown>;
+    const validation = validateEstimateForm(input);
     if (!validation.ok) {
       return NextResponse.json({ ok: false, errors: validation.errors }, { status: 400 });
     }
 
     const lead = validation.lead;
-    if (isDuplicate(lead)) {
+    const duplicateFingerprint = getLeadFingerprint(lead);
+    if (isDuplicateFingerprint(duplicateFingerprint)) {
       return NextResponse.json({ ok: false, error: "Duplicate request detected." }, { status: 409 });
     }
 
-    const { attachments, errors: attachmentErrors } = await parseAttachments(formData);
     const eventId = crypto.randomUUID();
     const config = getEmailBotConfig();
     assertGmailConfigured(config);
@@ -188,9 +150,25 @@ export async function POST(request: NextRequest) {
     const gmail = new GmailClient(config);
     const recipient = process.env.ESTIMATE_REQUEST_TO_EMAIL || siteConfig.primaryEmail;
     const subject = `NEW ESTIMATE REQUEST - ${lead.projectType} - ${lead.cityOrZip} - ${lead.fullName}`;
-    const body = buildLeadEmailBody(lead, eventId, attachments);
+    const body = buildLeadEmailBody(lead, eventId);
 
-    await gmail.sendEmail(recipient, subject, body, attachments, lead.email);
+    try {
+      await gmail.sendEmail(recipient, subject, body, lead.email);
+      markDuplicateFingerprint(duplicateFingerprint);
+      console.info("Estimate request email sent", { eventId, date: eventDate, emailStatus: "sent", storageStatus: "not_applicable" });
+    } catch (emailError) {
+      console.error("Estimate request email failed", {
+        eventId,
+        date: eventDate,
+        emailStatus: "failed",
+        storageStatus: "not_applicable",
+        error: emailError instanceof Error ? emailError.message : "Unknown email error",
+      });
+      return NextResponse.json(
+        { ok: false, error: "We couldn't send your request. Please try again or call us at (413) 277-5937." },
+        { status: 500 }
+      );
+    }
 
     const eventSourceUrl = lead.attribution.landing_page_url || request.headers.get("referer") || "";
     const capiResult = await sendMetaLeadEvent({
@@ -200,15 +178,25 @@ export async function POST(request: NextRequest) {
       userAgent: request.headers.get("user-agent") || "",
       eventSourceUrl,
     });
+    console.info("Estimate request CAPI completed", {
+      eventId,
+      date: eventDate,
+      emailStatus: "sent",
+      storageStatus: "not_applicable",
+      capiStatus: capiResult.ok ? "sent" : "not_sent",
+      capiHttpStatus: "status" in capiResult ? capiResult.status : 200,
+    });
 
     return NextResponse.json({
       ok: true,
       eventId,
-      attachmentWarnings: attachmentErrors,
       capi: capiResult.ok ? "sent" : "not_sent",
     });
   } catch (error) {
-    console.error("Estimate request failed", error);
+    console.error("Estimate request failed", {
+      date: eventDate,
+      error: error instanceof Error ? error.message : "Unknown estimate request error",
+    });
     return NextResponse.json(
       { ok: false, error: "We couldn't send your request. Please try again or call us at (413) 277-5937." },
       { status: 500 }

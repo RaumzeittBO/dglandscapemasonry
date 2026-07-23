@@ -32,7 +32,15 @@ ESTIMATE_REQUEST_TO_EMAIL=
 
 `META_CAPI_ACCESS_TOKEN` must never be prefixed with `NEXT_PUBLIC_`.
 
+`META_GRAPH_API_VERSION=v25.0` is used because Meta lists Graph API v25.0 as released on February 18, 2026 and available in the official Graph API changelog.
+
 If `ESTIMATE_REQUEST_TO_EMAIL` is empty, the form sends to `siteConfig.primaryEmail`.
+
+Recommended current value:
+
+```text
+ESTIMATE_REQUEST_TO_EMAIL=dglandscapemasonry@gmail.com
+```
 
 The form email uses the existing Gmail OAuth variables:
 
@@ -92,6 +100,16 @@ Check Vercel logs for:
 
 If CAPI fails after the email is sent, the user still receives confirmation and the lead is not lost.
 
+## Current Protections
+
+- Server-side validation and sanitization.
+- Honeypot field.
+- Double-click prevention in the browser.
+- Basic in-memory rate limiting.
+- Basic in-memory duplicate prevention.
+
+For production campaigns with higher spend, move rate limiting and duplicate fingerprints to persistent storage such as Upstash Redis. The initial release keeps the simpler implementation because the form no longer uploads files and the lead is preserved by email before CAPI is attempted.
+
 ## Manual Validation Checklist
 
 - Valid form submits.
@@ -99,8 +117,7 @@ If CAPI fails after the email is sent, the user still receives confirmation and 
 - Double submit is prevented by disabled button and duplicate detection.
 - UTM values are preserved in the email.
 - `fbclid`, `_fbp`, and `_fbc` are captured when present.
-- Optional photos up to 5 images are accepted.
-- Oversized/invalid photos return warnings or validation errors.
+- No file upload field is present.
 - `/thank-you` refresh does not fire `Lead`.
 - `META_CAPI_ACCESS_TOKEN` is not present in client code.
 - Mobile layout remains usable.

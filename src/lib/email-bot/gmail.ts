@@ -41,12 +41,6 @@ export type ParsedEmail = {
   snippet?: string;
 };
 
-export type GmailAttachment = {
-  filename: string;
-  mimeType: string;
-  data: Buffer;
-};
-
 type GmailListResponse = {
   messages?: Array<{ id: string; threadId: string }>;
 };
@@ -122,36 +116,9 @@ function buildReplyRaw(email: ParsedEmail, body: string, fromEmail?: string) {
   return base64UrlEncode(`${headers.join("\r\n")}\r\n\r\n${body}`);
 }
 
-function buildEmailRaw(to: string, subject: string, body: string, attachments: GmailAttachment[] = [], replyTo?: string) {
+function buildEmailRaw(to: string, subject: string, body: string, replyTo?: string) {
   const headers = [`To: ${escapeHeader(to)}`, replyTo ? `Reply-To: ${escapeHeader(replyTo)}` : "", `Subject: ${escapeHeader(subject)}`].filter(Boolean);
-
-  if (attachments.length === 0) {
-    return base64UrlEncode([...headers, "Content-Type: text/plain; charset=UTF-8", "", body].join("\r\n"));
-  }
-
-  const boundary = `dg-lead-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-  const parts = [
-    ...headers,
-    `Content-Type: multipart/mixed; boundary="${boundary}"`,
-    "",
-    `--${boundary}`,
-    "Content-Type: text/plain; charset=UTF-8",
-    "Content-Transfer-Encoding: 7bit",
-    "",
-    body,
-    ...attachments.flatMap((attachment) => [
-      `--${boundary}`,
-      `Content-Type: ${escapeHeader(attachment.mimeType)}; name="${escapeHeader(attachment.filename)}"`,
-      "Content-Transfer-Encoding: base64",
-      `Content-Disposition: attachment; filename="${escapeHeader(attachment.filename)}"`,
-      "",
-      attachment.data.toString("base64").replace(/(.{76})/g, "$1\r\n"),
-    ]),
-    `--${boundary}--`,
-    "",
-  ];
-
-  return base64UrlEncode(parts.join("\r\n"));
+  return base64UrlEncode([...headers, "Content-Type: text/plain; charset=UTF-8", "", body].join("\r\n"));
 }
 
 export class GmailClient {
@@ -298,8 +265,8 @@ export class GmailClient {
     });
   }
 
-  async sendEmail(to: string, subject: string, body: string, attachments: GmailAttachment[] = [], replyTo?: string) {
-    const raw = buildEmailRaw(to, subject, body, attachments, replyTo);
+  async sendEmail(to: string, subject: string, body: string, replyTo?: string) {
+    const raw = buildEmailRaw(to, subject, body, replyTo);
     return this.request<{ id: string; threadId: string }>("/messages/send", {
       method: "POST",
       body: JSON.stringify({ raw }),

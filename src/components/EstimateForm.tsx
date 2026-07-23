@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useMemo, useRef, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { CONTACT_METHODS, ESTIMATE_TIMINGS, PROJECT_TYPES, normalizePhone } from "@/lib/estimate/schema";
 import { getCallUrl, getPrivacyPolicyUrl, siteConfig } from "@/config/siteConfig";
 import { reportConversion } from "@/utils/conversion";
@@ -41,23 +41,6 @@ export default function EstimateForm() {
   const formRef = useRef<HTMLFormElement>(null);
   const [state, setState] = useState<SubmitState>("idle");
   const [error, setError] = useState("");
-  const [warnings, setWarnings] = useState<string[]>([]);
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-
-  const fileSummary = useMemo(() => {
-    if (selectedFiles.length === 0) return "Optional. Up to 5 photos.";
-    return `${selectedFiles.length} photo${selectedFiles.length === 1 ? "" : "s"} selected`;
-  }, [selectedFiles.length]);
-
-  const handleFiles = (files: FileList | null) => {
-    const nextFiles = Array.from(files || []).slice(0, 5);
-    setSelectedFiles(nextFiles);
-    if ((files?.length || 0) > 5) {
-      setWarnings(["Only the first 5 photos will be submitted."]);
-    } else {
-      setWarnings([]);
-    }
-  };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -68,7 +51,6 @@ export default function EstimateForm() {
     const normalizedPhone = normalizePhone(String(formData.get("phone") || ""));
 
     setError("");
-    setWarnings([]);
 
     if (!normalizedPhone) {
       setError("Please enter a valid US phone number.");
@@ -76,22 +58,32 @@ export default function EstimateForm() {
     }
 
     const attribution = getAttribution();
-    for (const [key, value] of Object.entries(attribution)) {
-      formData.set(key, value);
-    }
+    const payload = {
+      fullName: String(formData.get("fullName") || ""),
+      phone: String(formData.get("phone") || ""),
+      email: String(formData.get("email") || ""),
+      cityOrZip: String(formData.get("cityOrZip") || ""),
+      projectType: String(formData.get("projectType") || ""),
+      projectDetails: String(formData.get("projectDetails") || ""),
+      preferredContactMethod: String(formData.get("preferredContactMethod") || ""),
+      preferredEstimateTiming: String(formData.get("preferredEstimateTiming") || ""),
+      consent: formData.get("consent") === "on",
+      company: String(formData.get("company") || ""),
+      ...attribution,
+    };
 
     setState("sending");
 
     try {
       const response = await fetch("/api/estimate-request", {
         method: "POST",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
       const result = (await response.json()) as {
         ok?: boolean;
         eventId?: string;
         error?: string;
-        attachmentWarnings?: string[];
       };
 
       if (!response.ok || !result.ok || !result.eventId) {
@@ -111,10 +103,8 @@ export default function EstimateForm() {
       );
 
       reportConversion();
-      setWarnings(result.attachmentWarnings || []);
       setState("success");
       formRef.current?.reset();
-      setSelectedFiles([]);
       window.setTimeout(() => router.push("/thank-you"), 450);
     } catch (submitError) {
       setState("error");
@@ -139,7 +129,7 @@ export default function EstimateForm() {
             No obligation. Serving Waltham, MA and surrounding areas.
           </p>
           <div className="mt-8 rounded-2xl border border-charcoal/8 bg-white p-5 text-sm leading-6 text-charcoal/64 shadow-sm">
-            Free estimates are coordinated by call, text, or email. Photos are optional, but they help the team understand the project faster.
+            Free estimates are coordinated by call, text, or email. The team can request anything else needed after reviewing your project details.
           </div>
           <a
             href={getCallUrl()}
@@ -230,12 +220,6 @@ export default function EstimateForm() {
                 required
               />
             </label>
-
-            <label className={`${LABEL_CLASS} sm:col-span-2`}>
-              Project Photos
-              <input className={FIELD_CLASS} name="photos" type="file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" multiple onChange={(event) => handleFiles(event.target.files)} />
-              <span className="mt-2 block text-xs font-semibold text-charcoal/52">{fileSummary}</span>
-            </label>
           </div>
 
           <label className="mt-6 flex gap-3 text-sm font-semibold leading-6 text-charcoal/72">
@@ -247,12 +231,6 @@ export default function EstimateForm() {
               </Link>
             </span>
           </label>
-
-          {warnings.length > 0 && (
-            <div className="mt-5 rounded-xl border border-gold/30 bg-gold/10 px-4 py-3 text-sm font-semibold text-charcoal">
-              {warnings.join(" ")}
-            </div>
-          )}
 
           {error && (
             <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">

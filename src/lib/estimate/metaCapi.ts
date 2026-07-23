@@ -85,7 +85,10 @@ export async function sendMetaLeadEvent({ eventId, lead, clientIp, userAgent, ev
 
   const body = await response.text();
   if (!response.ok) {
-    console.error("Meta CAPI Lead failed", { status: response.status, body });
+    console.error("Meta CAPI Lead failed", {
+      status: response.status,
+      error: body.slice(0, 500),
+    });
     return { ok: false, skipped: false, status: response.status, body };
   }
 

@@ -198,7 +198,7 @@ export default function Hero() {
                                 <div className="rounded-2xl border border-white/14 bg-ink/70 p-4 backdrop-blur-xl">
                                     <div className="text-xs font-black uppercase tracking-[0.16em] text-gold">Free estimate ready</div>
                                     <p className="mt-2 text-sm font-semibold leading-6 text-white/78">
-                                        Email photos, city, phone number, and the project you want quoted.
+                                        Send your city, phone number, and the project you want quoted.
                                     </p>
                                 </div>
                             </div>

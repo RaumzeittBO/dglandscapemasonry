@@ -18,7 +18,7 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 className="font-heading text-2xl font-bold text-charcoal">Information We Collect</h2>
             <p className="mt-3">
-              D&G Landscape and Masonry Inc. collects information you submit through our website, including your name, phone number, email address, city or ZIP code, project type, project description, preferred contact method, preferred estimate timing, and optional project photos.
+              D&G Landscape and Masonry Inc. collects information you submit through our website, including your name, phone number, email address, city or ZIP code, project type, project description, preferred contact method, and preferred estimate timing.
             </p>
           </section>
 
@@ -32,7 +32,7 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 className="font-heading text-2xl font-bold text-charcoal">Cookies and Measurement</h2>
             <p className="mt-3">
-              Our website may use cookies and measurement tools including Meta Pixel and Meta Conversions API. These tools help us understand campaign performance and measure when a valid estimate request is submitted. We do not send project descriptions or photos to Meta.
+              Our website may use cookies and measurement tools including Meta Pixel and Meta Conversions API. These tools help us understand campaign performance and measure when a valid estimate request is submitted. We do not send project descriptions to Meta.
             </p>
           </section>
 
@@ -46,7 +46,7 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 className="font-heading text-2xl font-bold text-charcoal">Your Choices</h2>
             <p className="mt-3">
-              You can request that we modify or delete information you submitted by contacting us directly. You may also avoid optional photo uploads if you prefer not to submit images through the website.
+              You can request that we modify or delete information you submitted by contacting us directly.
             </p>
           </section>
 

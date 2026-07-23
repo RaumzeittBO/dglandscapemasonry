@@ -19,7 +19,7 @@ export default function BookingCTA() {
                             Tell us what you want changed. We will bring the plan.
                         </h2>
                         <p className="mt-6 max-w-2xl text-lg leading-8 text-white/68">
-                            Send photos, measurements, or a quick description. D&G will help you turn it into a clear scope, realistic quote, and a property upgrade that feels worth it.
+                            Send a quick description of the project. D&G will help you turn it into a clear scope, realistic quote, and a property upgrade that feels worth it.
                         </p>
 
                         <div className="mt-9 flex flex-col gap-3 sm:flex-row">

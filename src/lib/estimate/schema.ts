@@ -45,21 +45,22 @@ export type LeadAttribution = {
   fbc: string;
 };
 
-export type EstimateAttachment = {
-  filename: string;
-  mimeType: string;
-  data: Buffer;
-};
-
 export type ValidationResult =
   | { ok: true; lead: EstimateLead }
   | { ok: false; errors: Record<string, string> };
 
 const MAX_DETAILS_LENGTH = 1600;
 
-function getString(formData: FormData, key: string) {
-  const value = formData.get(key);
+export type EstimateRequestInput = Record<string, unknown>;
+
+function getString(input: EstimateRequestInput, key: string) {
+  const value = input[key];
   return typeof value === "string" ? value.trim() : "";
+}
+
+function getBoolean(input: EstimateRequestInput, key: string) {
+  const value = input[key];
+  return value === true || value === "true" || value === "on";
 }
 
 function sanitizeText(value: string, maxLength = 240) {
@@ -86,19 +87,19 @@ export function parseCityAndZip(value: string) {
   };
 }
 
-export function validateEstimateForm(formData: FormData): ValidationResult {
+export function validateEstimateForm(input: EstimateRequestInput): ValidationResult {
   const errors: Record<string, string> = {};
-  const fullName = sanitizeText(getString(formData, "fullName"));
-  const phone = sanitizeText(getString(formData, "phone"));
+  const fullName = sanitizeText(getString(input, "fullName"));
+  const phone = sanitizeText(getString(input, "phone"));
   const normalizedPhone = normalizePhone(phone);
-  const email = sanitizeText(getString(formData, "email").toLowerCase());
-  const cityOrZip = sanitizeText(getString(formData, "cityOrZip"));
-  const projectType = sanitizeText(getString(formData, "projectType")) as ProjectType;
-  const projectDetails = getString(formData, "projectDetails").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "").trim().slice(0, MAX_DETAILS_LENGTH);
-  const preferredContactMethod = sanitizeText(getString(formData, "preferredContactMethod")) as ContactMethod;
-  const preferredEstimateTiming = sanitizeText(getString(formData, "preferredEstimateTiming")) as EstimateTiming | "";
-  const consent = getString(formData, "consent") === "on" || getString(formData, "consent") === "true";
-  const honeypot = getString(formData, "company");
+  const email = sanitizeText(getString(input, "email").toLowerCase());
+  const cityOrZip = sanitizeText(getString(input, "cityOrZip"));
+  const projectType = sanitizeText(getString(input, "projectType")) as ProjectType;
+  const projectDetails = getString(input, "projectDetails").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "").trim().slice(0, MAX_DETAILS_LENGTH);
+  const preferredContactMethod = sanitizeText(getString(input, "preferredContactMethod")) as ContactMethod;
+  const preferredEstimateTiming = sanitizeText(getString(input, "preferredEstimateTiming")) as EstimateTiming | "";
+  const consent = getBoolean(input, "consent");
+  const honeypot = getString(input, "company");
 
   if (honeypot) errors.company = "Invalid request.";
   if (fullName.length < 2) errors.fullName = "Enter your full name.";
@@ -128,17 +129,17 @@ export function validateEstimateForm(formData: FormData): ValidationResult {
       preferredEstimateTiming,
       consent: true,
       attribution: {
-        utm_source: sanitizeText(getString(formData, "utm_source")),
-        utm_medium: sanitizeText(getString(formData, "utm_medium")),
-        utm_campaign: sanitizeText(getString(formData, "utm_campaign")),
-        utm_content: sanitizeText(getString(formData, "utm_content")),
-        utm_term: sanitizeText(getString(formData, "utm_term")),
-        fbclid: sanitizeText(getString(formData, "fbclid")),
-        landing_page_url: getString(formData, "landing_page_url").slice(0, 1000),
-        referrer: getString(formData, "referrer").slice(0, 1000),
-        submission_timestamp: sanitizeText(getString(formData, "submission_timestamp")),
-        fbp: sanitizeText(getString(formData, "fbp"), 500),
-        fbc: sanitizeText(getString(formData, "fbc"), 500),
+        utm_source: sanitizeText(getString(input, "utm_source")),
+        utm_medium: sanitizeText(getString(input, "utm_medium")),
+        utm_campaign: sanitizeText(getString(input, "utm_campaign")),
+        utm_content: sanitizeText(getString(input, "utm_content")),
+        utm_term: sanitizeText(getString(input, "utm_term")),
+        fbclid: sanitizeText(getString(input, "fbclid")),
+        landing_page_url: getString(input, "landing_page_url").slice(0, 1000),
+        referrer: getString(input, "referrer").slice(0, 1000),
+        submission_timestamp: sanitizeText(getString(input, "submission_timestamp")),
+        fbp: sanitizeText(getString(input, "fbp"), 500),
+        fbc: sanitizeText(getString(input, "fbc"), 500),
       },
     },
   };

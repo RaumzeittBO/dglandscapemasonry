@@ -60,7 +60,7 @@ export function getEmailUrl() {
     "",
     "Approximate timeline:",
     "",
-    "Please attach photos of the area if you can. Photos help us understand the project faster.",
+    "Please include any important details that would help us understand the project.",
     "",
     "Thank you.",
   ].join("\n");
@@ -82,7 +82,7 @@ export function getMailtoUrl() {
     "",
     "Project details:",
     "",
-    "Please attach photos of the area if you can.",
+    "Please include any important details that would help us understand the project.",
     "",
     "Thank you.",
   ].join("\n");

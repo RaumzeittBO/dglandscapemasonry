@@ -18,7 +18,7 @@ export default function ServiceAreas() {
                         Service areas
                     </h2>
                     <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-charcoal/62">
-                        D&G serves selected Massachusetts communities. Send your city and photos, and we will confirm availability quickly.
+                        D&G serves selected Massachusetts communities. Send your city and project details, and we will confirm availability quickly.
                     </p>
                 </div>
 
@@ -36,7 +36,7 @@ export default function ServiceAreas() {
 
                 <div className="reveal-element mt-12 rounded-[1.5rem] border border-charcoal/8 bg-mist p-8 text-center shadow-sm">
                     <p className="text-charcoal/68">
-                        Not listed? Email us your city and project photos. We may still serve your area.
+                        Not listed? Send your city and project details. We may still serve your area.
                     </p>
                     <div className="mt-5 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
                         <a
