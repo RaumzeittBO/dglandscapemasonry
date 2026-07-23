@@ -116,6 +116,11 @@ function buildReplyRaw(email: ParsedEmail, body: string, fromEmail?: string) {
   return base64UrlEncode(`${headers.join("\r\n")}\r\n\r\n${body}`);
 }
 
+function buildEmailRaw(to: string, subject: string, body: string, replyTo?: string) {
+  const headers = [`To: ${escapeHeader(to)}`, replyTo ? `Reply-To: ${escapeHeader(replyTo)}` : "", `Subject: ${escapeHeader(subject)}`].filter(Boolean);
+  return base64UrlEncode([...headers, "Content-Type: text/plain; charset=UTF-8", "", body].join("\r\n"));
+}
+
 export class GmailClient {
   private accessToken?: string;
 
@@ -254,6 +259,14 @@ export class GmailClient {
       ].join("\r\n")
     );
 
+    return this.request<{ id: string; threadId: string }>("/messages/send", {
+      method: "POST",
+      body: JSON.stringify({ raw }),
+    });
+  }
+
+  async sendEmail(to: string, subject: string, body: string, replyTo?: string) {
+    const raw = buildEmailRaw(to, subject, body, replyTo);
     return this.request<{ id: string; threadId: string }>("/messages/send", {
       method: "POST",
       body: JSON.stringify({ raw }),

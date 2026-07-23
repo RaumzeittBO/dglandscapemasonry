@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { siteConfig, getCallUrl, getEmailUrl } from "@/config/siteConfig";
+import { siteConfig, getCallUrl, getEstimateFormUrl, getPrivacyPolicyUrl } from "@/config/siteConfig";
 import { reportConversion } from "@/utils/conversion";
 
 export default function FinalCTA() {
@@ -54,17 +55,12 @@ export default function FinalCTA() {
                     </p>
 
                     <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-                        {siteConfig.primaryEmail && (
-                            <a
-                                href={getEmailUrl()}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={reportConversion}
-                                className="inline-flex items-center justify-center rounded-full bg-gold px-8 py-4 text-base font-black text-ink transition-all duration-300 hover:-translate-y-1 hover:bg-white"
-                            >
-                                Email for a free quote
-                            </a>
-                        )}
+                        <a
+                            href={getEstimateFormUrl()}
+                            className="inline-flex items-center justify-center rounded-full bg-gold px-8 py-4 text-base font-black text-ink transition-all duration-300 hover:-translate-y-1 hover:bg-white"
+                        >
+                            Request a free quote
+                        </a>
                         <a
                             href={getCallUrl()}
                             onClick={reportConversion}
@@ -89,15 +85,9 @@ export default function FinalCTA() {
                         <h4 className="text-xs font-black uppercase tracking-[0.18em] text-moss">Contact</h4>
                         <div className="mt-4 space-y-2 text-sm font-semibold text-charcoal/70">
                             <a href={getCallUrl()} className="block hover:text-moss">{siteConfig.phoneDisplay}</a>
-                            <a
-                                href={getEmailUrl()}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={reportConversion}
-                                className="block hover:text-moss"
-                            >
-                                {siteConfig.primaryEmail}
-                            </a>
+                            <a href={getEstimateFormUrl()} className="block hover:text-moss">Free estimate form</a>
+                            <a href={`mailto:${siteConfig.primaryEmail}`} className="block hover:text-moss">{siteConfig.primaryEmail}</a>
+                            <Link href={getPrivacyPolicyUrl()} className="block hover:text-moss">Privacy Policy</Link>
                         </div>
                     </div>
 

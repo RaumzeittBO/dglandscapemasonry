@@ -6,7 +6,7 @@ import { useState } from "react";
 import BeforeAfterSlider from "./BeforeAfterSlider";
 import { projects } from "@/data/projects";
 import { transformations } from "@/data/transformations";
-import { siteConfig, getCallUrl, getEmailUrl } from "@/config/siteConfig";
+import { siteConfig, getCallUrl, getEstimateFormUrl } from "@/config/siteConfig";
 import { reportConversion } from "@/utils/conversion";
 import { useStaggerReveal } from "@/hooks/useGsapAnimations";
 
@@ -121,17 +121,12 @@ export default function Portfolio() {
                     </p>
                     <p className="mt-2 text-lg text-gold">Call/Text {siteConfig.phoneDisplay}</p>
                     <div className="mt-6 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-                        {siteConfig.primaryEmail && (
-                            <a
-                                href={getEmailUrl()}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={reportConversion}
-                                className="inline-flex items-center gap-2 rounded-full bg-white px-8 py-3.5 font-bold text-ink transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
-                            >
-                                Email Us
-                            </a>
-                        )}
+                        <a
+                            href={getEstimateFormUrl()}
+                            className="inline-flex items-center gap-2 rounded-full bg-white px-8 py-3.5 font-bold text-ink transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+                        >
+                            Get a Free Estimate
+                        </a>
                         <a
                             href={getCallUrl()}
                             onClick={reportConversion}

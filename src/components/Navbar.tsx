@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { siteConfig, getCallUrl, getEmailUrl } from "@/config/siteConfig";
+import { siteConfig, getCallUrl, getEstimateFormUrl } from "@/config/siteConfig";
 import { reportConversion } from "@/utils/conversion";
 
 const navItems = [
@@ -73,17 +73,12 @@ export default function Navbar() {
                 </nav>
 
                 <div className="flex items-center gap-2">
-                    {siteConfig.primaryEmail && (
-                        <a
-                            href={getEmailUrl()}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={reportConversion}
-                            className="hidden rounded-full bg-gold px-4 py-2.5 text-sm font-black text-ink shadow-[0_12px_30px_rgba(210,185,128,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-white md:inline-flex"
-                        >
-                            Email Quote
-                        </a>
-                    )}
+                    <a
+                        href={getEstimateFormUrl()}
+                        className="hidden rounded-full bg-gold px-4 py-2.5 text-sm font-black text-ink shadow-[0_12px_30px_rgba(210,185,128,0.2)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-white md:inline-flex"
+                    >
+                        Get Quote
+                    </a>
                     <a
                         href={getCallUrl()}
                         onClick={reportConversion}

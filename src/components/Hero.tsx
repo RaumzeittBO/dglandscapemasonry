@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import gsap from "gsap";
-import { siteConfig, getCallUrl, getEmailUrl } from "@/config/siteConfig";
+import { getCallUrl, getEstimateFormUrl, siteConfig } from "@/config/siteConfig";
 import { reportConversion } from "@/utils/conversion";
 
 const heroImages = [
@@ -27,7 +27,7 @@ const proofPoints = [
 
 const projectDetails = [
     "Free on-site estimate",
-    "Photo review before visit",
+    "Residential and commercial",
     "Clear scope and timeline",
 ];
 
@@ -147,36 +147,31 @@ export default function Hero() {
                 <div className="max-w-3xl">
                     <div className="hero-reveal mb-5 inline-flex items-center gap-3 rounded-full border border-white/16 bg-white/10 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-white/82 backdrop-blur-md">
                         <span className="h-2 w-2 rounded-full bg-sage shadow-[0_0_22px_rgba(166,196,147,0.9)]" />
-                        Massachusetts outdoor transformations
+                        Free on-site estimates
                     </div>
 
                     <h1 className="hero-reveal font-heading text-[clamp(2.75rem,5.35vw,5.1rem)] font-bold leading-[0.95] tracking-normal">
-                        Outdoor spaces that make the property feel complete.
+                        Transform Your Outdoor Space
                     </h1>
 
                     <p className="hero-reveal mt-5 max-w-2xl text-base leading-7 text-white/74 sm:text-lg">
-                        D&G Landscape and Masonry Inc. builds patios, stonework, lawns, and full exterior upgrades with a polished finish that helps homeowners feel ready to hire.
+                        Professional landscaping and masonry in Waltham, MA and surrounding areas. D&G builds patios, walkways, retaining walls, lawns, and exterior upgrades with a polished finish.
                     </p>
 
                     <div className="hero-reveal mt-7 flex flex-col gap-3 sm:flex-row">
-                        {siteConfig.primaryEmail && (
-                            <a
-                                href={getEmailUrl()}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                onClick={reportConversion}
-                                className="group inline-flex items-center justify-center gap-3 rounded-full bg-gold px-7 py-4 text-base font-black text-ink shadow-[0_22px_50px_rgba(210,185,128,0.24)] transition-all duration-300 hover:-translate-y-1 hover:bg-white"
-                            >
-                                Email for a free estimate
-                                <span className="transition-transform group-hover:translate-x-1">-&gt;</span>
-                            </a>
-                        )}
+                        <a
+                            href={getEstimateFormUrl()}
+                            className="group inline-flex items-center justify-center gap-3 rounded-full bg-gold px-7 py-4 text-base font-black text-ink shadow-[0_22px_50px_rgba(210,185,128,0.24)] transition-all duration-300 hover:-translate-y-1 hover:bg-white"
+                        >
+                            Request My Free Estimate
+                            <span className="transition-transform group-hover:translate-x-1">-&gt;</span>
+                        </a>
                         <a
                             href={getCallUrl()}
                             onClick={reportConversion}
                             className="inline-flex items-center justify-center rounded-full border border-white/18 bg-white/10 px-7 py-4 text-base font-bold text-white backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:bg-white/18"
                         >
-                            Call/Text instead
+                            Call or Text {siteConfig.phoneDisplay}
                         </a>
                     </div>
 
@@ -203,7 +198,7 @@ export default function Hero() {
                                 <div className="rounded-2xl border border-white/14 bg-ink/70 p-4 backdrop-blur-xl">
                                     <div className="text-xs font-black uppercase tracking-[0.16em] text-gold">Free estimate ready</div>
                                     <p className="mt-2 text-sm font-semibold leading-6 text-white/78">
-                                        Email photos, city, phone number, and the project you want quoted.
+                                        Send your city, phone number, and the project you want quoted.
                                     </p>
                                 </div>
                             </div>

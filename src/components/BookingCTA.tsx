@@ -1,7 +1,7 @@
 "use client";
 
 import { useScrollReveal } from "@/hooks/useGsapAnimations";
-import { siteConfig, getCallUrl, getEmailUrl } from "@/config/siteConfig";
+import { siteConfig, getCallUrl, getEstimateFormUrl } from "@/config/siteConfig";
 import { reportConversion } from "@/utils/conversion";
 
 export default function BookingCTA() {
@@ -19,21 +19,16 @@ export default function BookingCTA() {
                             Tell us what you want changed. We will bring the plan.
                         </h2>
                         <p className="mt-6 max-w-2xl text-lg leading-8 text-white/68">
-                            Send photos, measurements, or a quick description. D&G will help you turn it into a clear scope, realistic quote, and a property upgrade that feels worth it.
+                            Send a quick description of the project. D&G will help you turn it into a clear scope, realistic quote, and a property upgrade that feels worth it.
                         </p>
 
                         <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-                            {siteConfig.primaryEmail && (
-                                <a
-                                    href={getEmailUrl()}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    onClick={reportConversion}
-                                    className="inline-flex items-center justify-center rounded-full bg-gold px-7 py-4 text-base font-black text-ink transition-all duration-300 hover:-translate-y-1 hover:bg-white"
-                                >
-                                    Email project details
-                                </a>
-                            )}
+                            <a
+                                href={getEstimateFormUrl()}
+                                className="inline-flex items-center justify-center rounded-full bg-gold px-7 py-4 text-base font-black text-ink transition-all duration-300 hover:-translate-y-1 hover:bg-white"
+                            >
+                                Request an estimate
+                            </a>
                             <a
                                 href={getCallUrl()}
                                 onClick={reportConversion}
