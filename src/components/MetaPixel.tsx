@@ -11,6 +11,12 @@ export default function MetaPixel() {
   const previousPathname = useRef(pathname);
 
   useEffect(() => {
+    if (!META_PIXEL_ID && process.env.NODE_ENV === "development") {
+      console.warn("Meta Pixel skipped: NEXT_PUBLIC_META_PIXEL_ID is not configured");
+    }
+  }, []);
+
+  useEffect(() => {
     if (!META_PIXEL_ID || typeof window.fbq !== "function") return;
     if (previousPathname.current === pathname) return;
     previousPathname.current = pathname;

@@ -32,7 +32,7 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 className="font-heading text-2xl font-bold text-charcoal">Cookies and Measurement</h2>
             <p className="mt-3">
-              Our website may use cookies and measurement tools including Meta Pixel and Meta Conversions API. These tools help us understand campaign performance and measure when a valid estimate request is submitted. We do not send project descriptions to Meta.
+              Our website may use cookies and measurement tools including Meta Pixel. These tools help us understand campaign performance and measure when a valid estimate request is submitted. Additional server-side measurement tools may be activated in the future to improve attribution. We do not send project descriptions to Meta.
             </p>
           </section>
 

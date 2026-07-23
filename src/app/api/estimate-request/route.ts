@@ -125,16 +125,22 @@ function buildLeadEmailBody(lead: EstimateLead, eventId: string) {
 export async function POST(request: NextRequest) {
   const eventDate = new Date().toISOString();
   try {
+    let input: Record<string, unknown>;
+    try {
+      input = (await request.json()) as Record<string, unknown>;
+    } catch {
+      return NextResponse.json({ ok: false, error: "Invalid request." }, { status: 400 });
+    }
+
+    const validation = validateEstimateForm(input);
+    if (!validation.ok) {
+      return NextResponse.json({ ok: false, errors: validation.errors }, { status: 400 });
+    }
+
     const ip = getClientIp(request);
     if (isRateLimited(ip)) {
       console.warn("Estimate request rate limited", { date: eventDate, ipHash: crypto.createHash("sha256").update(ip).digest("hex").slice(0, 12) });
       return NextResponse.json({ ok: false, error: "Too many requests. Please try again later." }, { status: 429 });
-    }
-
-    const input = (await request.json()) as Record<string, unknown>;
-    const validation = validateEstimateForm(input);
-    if (!validation.ok) {
-      return NextResponse.json({ ok: false, errors: validation.errors }, { status: 400 });
     }
 
     const lead = validation.lead;

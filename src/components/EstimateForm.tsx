@@ -8,6 +8,7 @@ import { getCallUrl, getPrivacyPolicyUrl, siteConfig } from "@/config/siteConfig
 import { reportConversion } from "@/utils/conversion";
 
 type SubmitState = "idle" | "sending" | "success" | "error";
+type FieldErrors = Record<string, string>;
 
 const FIELD_CLASS =
   "mt-2 w-full rounded-xl border border-charcoal/10 bg-white px-4 py-3 text-sm font-semibold text-charcoal shadow-sm transition focus:border-moss focus:outline-none focus:ring-2 focus:ring-moss/20";
@@ -41,6 +42,7 @@ export default function EstimateForm() {
   const formRef = useRef<HTMLFormElement>(null);
   const [state, setState] = useState<SubmitState>("idle");
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -51,8 +53,10 @@ export default function EstimateForm() {
     const normalizedPhone = normalizePhone(String(formData.get("phone") || ""));
 
     setError("");
+    setFieldErrors({});
 
     if (!normalizedPhone) {
+      setFieldErrors({ phone: "Please enter a valid US phone number." });
       setError("Please enter a valid US phone number.");
       return;
     }
@@ -84,9 +88,11 @@ export default function EstimateForm() {
         ok?: boolean;
         eventId?: string;
         error?: string;
+        errors?: FieldErrors;
       };
 
       if (!response.ok || !result.ok || !result.eventId) {
+        if (result.errors) setFieldErrors(result.errors);
         throw new Error(result.error || "We couldn't send your request. Please try again or call us at (413) 277-5937.");
       }
 
@@ -96,6 +102,7 @@ export default function EstimateForm() {
         {
           content_name: "Free On-Site Estimate",
           content_category: "Landscaping and Masonry",
+          lead_type: "estimate_request",
         },
         {
           eventID: result.eventId,
@@ -151,27 +158,31 @@ export default function EstimateForm() {
           <div className="grid gap-5 sm:grid-cols-2">
             <label className={LABEL_CLASS}>
               Full Name *
-              <input className={FIELD_CLASS} name="fullName" autoComplete="name" minLength={2} required />
+              <input className={FIELD_CLASS} name="fullName" autoComplete="name" minLength={2} required aria-invalid={Boolean(fieldErrors.fullName)} aria-describedby={fieldErrors.fullName ? "fullName-error" : undefined} />
+              {fieldErrors.fullName && <span id="fullName-error" className="mt-2 block text-xs font-bold text-red-700">{fieldErrors.fullName}</span>}
             </label>
 
             <label className={LABEL_CLASS}>
               Phone Number *
-              <input className={FIELD_CLASS} name="phone" autoComplete="tel" inputMode="tel" placeholder="(413) 555-0123" required />
+              <input className={FIELD_CLASS} name="phone" autoComplete="tel" inputMode="tel" placeholder="(413) 555-0123" required aria-invalid={Boolean(fieldErrors.phone)} aria-describedby={fieldErrors.phone ? "phone-error" : undefined} />
+              {fieldErrors.phone && <span id="phone-error" className="mt-2 block text-xs font-bold text-red-700">{fieldErrors.phone}</span>}
             </label>
 
             <label className={LABEL_CLASS}>
               Email Address *
-              <input className={FIELD_CLASS} name="email" type="email" autoComplete="email" required />
+              <input className={FIELD_CLASS} name="email" type="email" autoComplete="email" inputMode="email" required aria-invalid={Boolean(fieldErrors.email)} aria-describedby={fieldErrors.email ? "email-error" : undefined} />
+              {fieldErrors.email && <span id="email-error" className="mt-2 block text-xs font-bold text-red-700">{fieldErrors.email}</span>}
             </label>
 
             <label className={LABEL_CLASS}>
               City or ZIP Code *
-              <input className={FIELD_CLASS} name="cityOrZip" autoComplete="address-level2 postal-code" placeholder="Waltham or 02453" required />
+              <input className={FIELD_CLASS} name="cityOrZip" autoComplete="address-level2 postal-code" placeholder="Waltham or 02453" required aria-invalid={Boolean(fieldErrors.cityOrZip)} aria-describedby={fieldErrors.cityOrZip ? "cityOrZip-error" : undefined} />
+              {fieldErrors.cityOrZip && <span id="cityOrZip-error" className="mt-2 block text-xs font-bold text-red-700">{fieldErrors.cityOrZip}</span>}
             </label>
 
             <label className={LABEL_CLASS}>
               Project Type *
-              <select className={FIELD_CLASS} name="projectType" required defaultValue="">
+              <select className={FIELD_CLASS} name="projectType" required defaultValue="" aria-invalid={Boolean(fieldErrors.projectType)} aria-describedby={fieldErrors.projectType ? "projectType-error" : undefined}>
                 <option value="" disabled>
                   Select project type
                 </option>
@@ -181,11 +192,12 @@ export default function EstimateForm() {
                   </option>
                 ))}
               </select>
+              {fieldErrors.projectType && <span id="projectType-error" className="mt-2 block text-xs font-bold text-red-700">{fieldErrors.projectType}</span>}
             </label>
 
             <label className={LABEL_CLASS}>
               Preferred Contact Method *
-              <select className={FIELD_CLASS} name="preferredContactMethod" required defaultValue="">
+              <select className={FIELD_CLASS} name="preferredContactMethod" required defaultValue="" aria-invalid={Boolean(fieldErrors.preferredContactMethod)} aria-describedby={fieldErrors.preferredContactMethod ? "preferredContactMethod-error" : undefined}>
                 <option value="" disabled>
                   Select contact method
                 </option>
@@ -195,11 +207,12 @@ export default function EstimateForm() {
                   </option>
                 ))}
               </select>
+              {fieldErrors.preferredContactMethod && <span id="preferredContactMethod-error" className="mt-2 block text-xs font-bold text-red-700">{fieldErrors.preferredContactMethod}</span>}
             </label>
 
             <label className={`${LABEL_CLASS} sm:col-span-2`}>
               Preferred Estimate Timing
-              <select className={FIELD_CLASS} name="preferredEstimateTiming" defaultValue="">
+              <select className={FIELD_CLASS} name="preferredEstimateTiming" defaultValue="" aria-invalid={Boolean(fieldErrors.preferredEstimateTiming)} aria-describedby={fieldErrors.preferredEstimateTiming ? "preferredEstimateTiming-error" : undefined}>
                 <option value="">No preference</option>
                 {ESTIMATE_TIMINGS.map((timing) => (
                   <option key={timing} value={timing}>
@@ -207,6 +220,7 @@ export default function EstimateForm() {
                   </option>
                 ))}
               </select>
+              {fieldErrors.preferredEstimateTiming && <span id="preferredEstimateTiming-error" className="mt-2 block text-xs font-bold text-red-700">{fieldErrors.preferredEstimateTiming}</span>}
             </label>
 
             <label className={`${LABEL_CLASS} sm:col-span-2`}>
@@ -218,7 +232,10 @@ export default function EstimateForm() {
                 maxLength={1600}
                 placeholder="Tell us what you want built, repaired, cleaned up, or transformed."
                 required
+                aria-invalid={Boolean(fieldErrors.projectDetails)}
+                aria-describedby={fieldErrors.projectDetails ? "projectDetails-error" : undefined}
               />
+              {fieldErrors.projectDetails && <span id="projectDetails-error" className="mt-2 block text-xs font-bold text-red-700">{fieldErrors.projectDetails}</span>}
             </label>
           </div>
 
@@ -231,15 +248,16 @@ export default function EstimateForm() {
               </Link>
             </span>
           </label>
+          {fieldErrors.consent && <span className="mt-2 block text-xs font-bold text-red-700">{fieldErrors.consent}</span>}
 
           {error && (
-            <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">
+            <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800" role="alert" aria-live="polite">
               {error}
             </div>
           )}
 
           {state === "success" && (
-            <div className="mt-5 rounded-xl border border-moss/20 bg-moss/10 px-4 py-3 text-sm font-semibold text-moss">
+            <div className="mt-5 rounded-xl border border-moss/20 bg-moss/10 px-4 py-3 text-sm font-semibold text-moss" role="status" aria-live="polite">
               Request received. Redirecting to confirmation...
             </div>
           )}

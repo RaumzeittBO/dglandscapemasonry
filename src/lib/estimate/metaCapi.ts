@@ -29,8 +29,14 @@ export async function sendMetaLeadEvent({ eventId, lead, clientIp, userAgent, ev
   const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
   const accessToken = process.env.META_CAPI_ACCESS_TOKEN;
 
-  if (!pixelId || !accessToken) {
-    return { ok: false, skipped: true, reason: "Meta Pixel ID or CAPI token not configured." };
+  if (!accessToken) {
+    console.warn("Meta CAPI skipped: access token not configured", { eventId });
+    return { ok: false, skipped: true, reason: "access_token_not_configured" };
+  }
+
+  if (!pixelId) {
+    console.warn("Meta CAPI skipped: pixel id not configured", { eventId });
+    return { ok: false, skipped: true, reason: "pixel_id_not_configured" };
   }
 
   const graphVersion = process.env.META_GRAPH_API_VERSION || "v25.0";
