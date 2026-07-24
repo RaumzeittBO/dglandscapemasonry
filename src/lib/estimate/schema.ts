@@ -69,13 +69,35 @@ function sanitizeText(value: string, maxLength = 240) {
 
 export function normalizePhone(value: string) {
   const digits = value.replace(/\D/g, "");
-  if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;
-  if (digits.length === 10) return `+1${digits}`;
-  return "";
+  const nationalNumber = digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits;
+
+  if (nationalNumber.length !== 10) return "";
+
+  const areaCode = nationalNumber.slice(0, 3);
+  const exchange = nationalNumber.slice(3, 6);
+  if (!/^[2-9]\d{2}$/.test(areaCode) || !/^[2-9]\d{2}$/.test(exchange)) return "";
+
+  return `+1${nationalNumber}`;
 }
 
 export function isValidEmail(value: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  if (value.length > 254) return false;
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
+  if (!emailPattern.test(value)) return false;
+  const [localPart, domain] = value.split("@");
+  return Boolean(localPart && localPart.length <= 64 && domain && !domain.includes(".."));
+}
+
+export function isValidCityOrZip(value: string) {
+  const zipPattern = /\b\d{5}(?:-\d{4})?\b/;
+  const trimmed = value.trim();
+
+  if (!trimmed) return false;
+  if (/^\d/.test(trimmed)) return /^\d{5}(?:-\d{4})?$/.test(trimmed);
+
+  const city = trimmed.replace(zipPattern, "").replace(/,\s*(?:ma|massachusetts)\b/i, "").trim();
+  if (!city || /\d/.test(city)) return false;
+  return /^[a-z][a-z\s.'-]{1,80}$/i.test(city);
 }
 
 export function parseCityAndZip(value: string) {
@@ -105,9 +127,8 @@ export function validateEstimateForm(input: EstimateRequestInput): ValidationRes
   if (fullName.length < 2) errors.fullName = "Enter your full name.";
   if (!normalizedPhone) errors.phone = "Enter a valid US phone number.";
   if (!isValidEmail(email)) errors.email = "Enter a valid email address.";
-  if (!cityOrZip) errors.cityOrZip = "Enter your city or ZIP code.";
+  if (!isValidCityOrZip(cityOrZip)) errors.cityOrZip = "Enter a valid city or US ZIP code.";
   if (!PROJECT_TYPES.includes(projectType)) errors.projectType = "Select a project type.";
-  if (projectDetails.length < 20) errors.projectDetails = "Tell us a little more about the project.";
   if (projectDetails.length > MAX_DETAILS_LENGTH) errors.projectDetails = "Project details are too long.";
   if (!CONTACT_METHODS.includes(preferredContactMethod)) errors.preferredContactMethod = "Select a contact method.";
   if (preferredEstimateTiming && !ESTIMATE_TIMINGS.includes(preferredEstimateTiming)) errors.preferredEstimateTiming = "Select a valid timing option.";

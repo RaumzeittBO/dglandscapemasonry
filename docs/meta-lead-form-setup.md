@@ -76,13 +76,13 @@ Required:
 - Email Address
 - City or ZIP Code
 - Project Type
-- Project Description
 - Preferred Contact Method
 - Consent checkbox
 
 Optional:
 
 - Preferred Estimate Timing
+- Project Description
 
 ## Backend Guarantees
 

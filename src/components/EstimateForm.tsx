@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useRef, useState } from "react";
-import { CONTACT_METHODS, ESTIMATE_TIMINGS, PROJECT_TYPES, normalizePhone } from "@/lib/estimate/schema";
+import { CONTACT_METHODS, ESTIMATE_TIMINGS, PROJECT_TYPES, isValidCityOrZip, isValidEmail, normalizePhone } from "@/lib/estimate/schema";
 import { getCallUrl, getPrivacyPolicyUrl, siteConfig } from "@/config/siteConfig";
 import { reportConversion } from "@/utils/conversion";
 
@@ -51,13 +51,20 @@ export default function EstimateForm() {
     const form = event.currentTarget;
     const formData = new FormData(form);
     const normalizedPhone = normalizePhone(String(formData.get("phone") || ""));
+    const email = String(formData.get("email") || "").trim().toLowerCase();
+    const cityOrZip = String(formData.get("cityOrZip") || "").trim();
 
     setError("");
     setFieldErrors({});
 
-    if (!normalizedPhone) {
-      setFieldErrors({ phone: "Please enter a valid US phone number." });
-      setError("Please enter a valid US phone number.");
+    const nextFieldErrors: FieldErrors = {};
+    if (!normalizedPhone) nextFieldErrors.phone = "Please enter a valid US phone number.";
+    if (!isValidEmail(email)) nextFieldErrors.email = "Please enter a valid email address.";
+    if (!isValidCityOrZip(cityOrZip)) nextFieldErrors.cityOrZip = "Please enter a valid city or US ZIP code.";
+
+    if (Object.keys(nextFieldErrors).length > 0) {
+      setFieldErrors(nextFieldErrors);
+      setError("Please fix the highlighted fields before sending your request.");
       return;
     }
 
@@ -65,8 +72,8 @@ export default function EstimateForm() {
     const payload = {
       fullName: String(formData.get("fullName") || ""),
       phone: String(formData.get("phone") || ""),
-      email: String(formData.get("email") || ""),
-      cityOrZip: String(formData.get("cityOrZip") || ""),
+      email,
+      cityOrZip,
       projectType: String(formData.get("projectType") || ""),
       projectDetails: String(formData.get("projectDetails") || ""),
       preferredContactMethod: String(formData.get("preferredContactMethod") || ""),
@@ -224,14 +231,12 @@ export default function EstimateForm() {
             </label>
 
             <label className={`${LABEL_CLASS} sm:col-span-2`}>
-              Tell Us About Your Project *
+              Tell Us About Your Project
               <textarea
                 className={`${FIELD_CLASS} min-h-36 resize-y leading-6`}
                 name="projectDetails"
-                minLength={20}
                 maxLength={1600}
                 placeholder="Tell us what you want built, repaired, cleaned up, or transformed."
-                required
                 aria-invalid={Boolean(fieldErrors.projectDetails)}
                 aria-describedby={fieldErrors.projectDetails ? "projectDetails-error" : undefined}
               />
