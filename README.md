@@ -33,7 +33,7 @@ Set these in Vercel **Preview** first, then Production after approval:
 
 Optional: `TURNSTILE_EXPECTED_HOSTNAME` (exact hostname), `META_CAPI_ACCESS_TOKEN`, `META_GRAPH_API_VERSION`, `META_TEST_EVENT_CODE` (Preview test only), and the existing email bot variables documented in `docs/email-bot-setup.md`. Keep credentials server only. Never reveal values in logs or screenshots.
 
-The Vercel project is `proyect` under `gfabrigtrf-7085s-projects`. It currently has Gmail and Meta variables in both environments, but no database or Turnstile configuration. No database is linked in Vercel Storage as of 2026-10-14. A PostgreSQL service must be linked or provided before the new form can accept requests. Do not point Preview at the Production lead database unless test rows can be clearly isolated and removed.
+The Vercel project is `proyect` under `gfabrigtrf-7085s-projects`. Its Gmail and Meta variables exist in both environments. The free Neon resource `dg-estimates-preview` is connected only to Preview; `docs/estimate-requests.sql` has been applied and the table was empty after setup on 2026-10-14. The verified recipient, `LEAD_HASH_SECRET`, and Cloudflare Turnstile keys and expected hostname are set for the `codex/secure-estimate-intake` Preview branch. The Turnstile widget is named `D&G estimate preview` and allows the branch's stable Vercel hostname. Production has no database or Turnstile configuration for this intake flow.
 
 ## Preview and release
 
@@ -46,6 +46,6 @@ The Vercel project is `proyect` under `gfabrigtrf-7085s-projects`. It currently 
 
 ## Maintenance and access
 
-Repository: `RaumzeittBO/dglandscapemasonry` (currently public). The GitHub owner account has already invited `pachaxbo-commits`; the invitation is pending acceptance. Once accepted, verify write access with `gh repo view RaumzeittBO/dglandscapemasonry --json viewerPermission`. For a private repository, the owner can open **Settings → Collaborators → Add people**, select `pachaxbo-commits`, and grant write access. The Vercel project owner should also grant the maintenance team appropriate project access.
+Repository: `RaumzeittBO/dglandscapemasonry` (currently public). The `pachaxbo-commits` invitation was accepted and write access verified. A draft pull request for this work is open at [#1](https://github.com/RaumzeittBO/dglandscapemasonry/pull/1). For future maintainers, the owner can open **Settings → Collaborators → Add people** and grant write access. The Vercel project owner should also grant the maintenance team appropriate project access.
 
 Update content in `src/config/siteConfig.ts`, `src/data/` and `public/`. Use genuine D&G photos and independently verified business claims. Update dependencies with `npm update` on a branch, run the checks, review the Preview, then release by merging to `main` after approval. Rotate Gmail, Meta, database and Turnstile credentials through their providers and Vercel environment settings; redeploy affected environments.
