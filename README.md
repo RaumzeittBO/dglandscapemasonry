@@ -33,7 +33,7 @@ Set these in Vercel **Preview** first, then Production after approval:
 
 Optional: `TURNSTILE_EXPECTED_HOSTNAME` (exact hostname), `META_CAPI_ACCESS_TOKEN`, `META_GRAPH_API_VERSION`, `META_TEST_EVENT_CODE` (Preview test only), and the existing email bot variables documented in `docs/email-bot-setup.md`. Keep credentials server only. Never reveal values in logs or screenshots.
 
-The Vercel project is `proyect` under `gfabrigtrf-7085s-projects`. Its Gmail and Meta variables exist in both environments. The free Neon resource `dg-estimates-preview` is connected only to Preview; `docs/estimate-requests.sql` has been applied and the table was empty after setup on 2026-10-14. The verified recipient, `LEAD_HASH_SECRET`, and Cloudflare Turnstile keys and expected hostname are set for the `codex/secure-estimate-intake` Preview branch. The Turnstile widget is named `D&G estimate preview` and allows the branch's stable Vercel hostname. Production has no database or Turnstile configuration for this intake flow.
+The Vercel project is `proyect` under `gfabrigtrf-7085s-projects`. Its Gmail and Meta variables exist in both environments. The free Neon resource `dg-estimates-preview` is connected only to Preview; `docs/estimate-requests.sql` has been applied. The verified recipient, `LEAD_HASH_SECRET`, and Cloudflare Turnstile keys and expected hostname are set for the `codex/secure-estimate-intake` Preview branch. The Turnstile widget is named `D&G estimate preview` and allows the branch's stable Vercel hostname. Production has no database or Turnstile configuration for this intake flow. See [Preview verification](docs/preview-verification.md) for the test result and outstanding Meta access.
 
 ## Preview and release
 
