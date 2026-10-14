@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useRef, useState } from "react";
-import { CONTACT_METHODS, ESTIMATE_TIMINGS, PROJECT_TYPES, isValidCityOrZip, isValidEmail, normalizePhone } from "@/lib/estimate/schema";
+import Script from "next/script";
+import { CONTACT_METHODS, ESTIMATE_TIMINGS, PROJECT_TYPES, normalizePhone, validateEstimateForm } from "@/lib/estimate/schema";
 import { getCallUrl, getPrivacyPolicyUrl, siteConfig } from "@/config/siteConfig";
 import { reportConversion } from "@/utils/conversion";
 
@@ -40,9 +41,12 @@ function getAttribution() {
 export default function EstimateForm() {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+  const turnstileWidget = useRef<string | null>(null);
   const [state, setState] = useState<SubmitState>("idle");
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -51,20 +55,18 @@ export default function EstimateForm() {
     const form = event.currentTarget;
     const formData = new FormData(form);
     const normalizedPhone = normalizePhone(String(formData.get("phone") || ""));
-    const email = String(formData.get("email") || "").trim().toLowerCase();
-    const cityOrZip = String(formData.get("cityOrZip") || "").trim();
 
     setError("");
     setFieldErrors({});
 
-    const nextFieldErrors: FieldErrors = {};
-    if (!normalizedPhone) nextFieldErrors.phone = "Please enter a valid US phone number.";
-    if (!isValidEmail(email)) nextFieldErrors.email = "Please enter a valid email address.";
-    if (!isValidCityOrZip(cityOrZip)) nextFieldErrors.cityOrZip = "Please enter a valid city or US ZIP code.";
+    if (!turnstileSiteKey || !turnstileToken) {
+      setError("Please complete the security check before sending your request.");
+      return;
+    }
 
-    if (Object.keys(nextFieldErrors).length > 0) {
-      setFieldErrors(nextFieldErrors);
-      setError("Please fix the highlighted fields before sending your request.");
+    if (!normalizedPhone) {
+      setFieldErrors({ phone: "Please enter a valid US phone number." });
+      setError("Please enter a valid US phone number.");
       return;
     }
 
@@ -72,16 +74,24 @@ export default function EstimateForm() {
     const payload = {
       fullName: String(formData.get("fullName") || ""),
       phone: String(formData.get("phone") || ""),
-      email,
-      cityOrZip,
+      email: String(formData.get("email") || ""),
+      cityOrZip: String(formData.get("cityOrZip") || ""),
       projectType: String(formData.get("projectType") || ""),
       projectDetails: String(formData.get("projectDetails") || ""),
       preferredContactMethod: String(formData.get("preferredContactMethod") || ""),
       preferredEstimateTiming: String(formData.get("preferredEstimateTiming") || ""),
       consent: formData.get("consent") === "on",
       company: String(formData.get("company") || ""),
+      turnstileToken,
       ...attribution,
     };
+
+    const clientValidation = validateEstimateForm(payload);
+    if (!clientValidation.ok) {
+      setFieldErrors(clientValidation.errors);
+      setError("Please correct the highlighted fields.");
+      return;
+    }
 
     setState("sending");
 
@@ -119,15 +129,24 @@ export default function EstimateForm() {
       reportConversion();
       setState("success");
       formRef.current?.reset();
+      setTurnstileToken("");
       window.setTimeout(() => router.push("/thank-you"), 450);
     } catch (submitError) {
       setState("error");
+      setTurnstileToken("");
+      if (turnstileWidget.current) window.turnstile?.reset(turnstileWidget.current);
       setError(submitError instanceof Error ? submitError.message : "We couldn't send your request. Please try again or call us at (413) 277-5937.");
     }
   };
 
   return (
     <section id="free-estimate" className="bg-offwhite px-6 py-24 sm:py-32">
+      {turnstileSiteKey && <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" strategy="afterInteractive" onLoad={() => {
+        const container = document.getElementById("estimate-turnstile");
+        if (container && window.turnstile && !container.hasChildNodes()) {
+          turnstileWidget.current = window.turnstile.render(container, { sitekey: turnstileSiteKey, callback: setTurnstileToken, "expired-callback": () => setTurnstileToken("") });
+        }
+      }} />}
       <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.82fr_1fr] lg:items-start">
         <div className="reveal-element lg:sticky lg:top-28">
           <span className="inline-flex rounded-full bg-moss px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-white">
@@ -254,6 +273,8 @@ export default function EstimateForm() {
             </span>
           </label>
           {fieldErrors.consent && <span className="mt-2 block text-xs font-bold text-red-700">{fieldErrors.consent}</span>}
+
+          <div id="estimate-turnstile" className="mt-6 min-h-16" aria-label="Security check" />
 
           {error && (
             <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800" role="alert" aria-live="polite">

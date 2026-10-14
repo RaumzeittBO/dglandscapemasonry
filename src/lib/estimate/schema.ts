@@ -5,6 +5,7 @@ export const PROJECT_TYPES = [
   "Retaining Wall",
   "Sod Installation",
   "Hardscape Construction",
+  "Masonry / Stonework",
   "Commercial Property",
   "Other",
 ] as const;
@@ -70,13 +71,10 @@ function sanitizeText(value: string, maxLength = 240) {
 export function normalizePhone(value: string) {
   const digits = value.replace(/\D/g, "");
   const nationalNumber = digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits;
-
   if (nationalNumber.length !== 10) return "";
-
   const areaCode = nationalNumber.slice(0, 3);
   const exchange = nationalNumber.slice(3, 6);
   if (!/^[2-9]\d{2}$/.test(areaCode) || !/^[2-9]\d{2}$/.test(exchange)) return "";
-
   return `+1${nationalNumber}`;
 }
 
@@ -91,10 +89,8 @@ export function isValidEmail(value: string) {
 export function isValidCityOrZip(value: string) {
   const zipPattern = /\b\d{5}(?:-\d{4})?\b/;
   const trimmed = value.trim();
-
   if (!trimmed) return false;
   if (/^\d/.test(trimmed)) return /^\d{5}(?:-\d{4})?$/.test(trimmed);
-
   const city = trimmed.replace(zipPattern, "").replace(/,\s*(?:ma|massachusetts)\b/i, "").trim();
   if (!city || /\d/.test(city)) return false;
   return /^[a-z][a-z\s.'-]{1,80}$/i.test(city);
@@ -117,7 +113,7 @@ export function validateEstimateForm(input: EstimateRequestInput): ValidationRes
   const email = sanitizeText(getString(input, "email").toLowerCase());
   const cityOrZip = sanitizeText(getString(input, "cityOrZip"));
   const projectType = sanitizeText(getString(input, "projectType")) as ProjectType;
-  const projectDetails = getString(input, "projectDetails").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "").trim().slice(0, MAX_DETAILS_LENGTH);
+  const projectDetails = getString(input, "projectDetails").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "").trim();
   const preferredContactMethod = sanitizeText(getString(input, "preferredContactMethod")) as ContactMethod;
   const preferredEstimateTiming = sanitizeText(getString(input, "preferredEstimateTiming")) as EstimateTiming | "";
   const consent = getBoolean(input, "consent");

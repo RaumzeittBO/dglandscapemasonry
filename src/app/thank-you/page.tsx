@@ -26,7 +26,7 @@ export default function ThankYouPage() {
                     </p>
 
                     <p className="mb-8 text-base font-semibold leading-7 text-charcoal/62">
-                        Please check your email for our response.
+                        Keep your phone nearby. We will contact you using the method you selected.
                     </p>
 
                     <div className="mb-10 rounded-2xl border border-charcoal/8 bg-mist p-5">
