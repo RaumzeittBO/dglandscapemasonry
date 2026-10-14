@@ -1,129 +1,52 @@
-# GreenScape Luxury — Premium Landscaping Landing Page
+# D&G Landscape and Masonry
 
-A luxury, animated, mobile-first landing page built with **Next.js 16**, **TypeScript**, **Tailwind CSS v4**, and **GSAP** animations.
+Next.js 16, React 19, TypeScript and Tailwind site for [dglandscapemasonry.com](https://dglandscapemasonry.com/). The form at `/#free-estimate` uses a Next.js API route, PostgreSQL, Cloudflare Turnstile, Gmail API, Meta Pixel and optional Meta Conversions API.
 
-## Getting Started
+## Run locally
 
-```bash
-npm run dev    # Start development server (http://localhost:3000)
-npm run build  # Production build
-npm start      # Start production server
-```
+1. Install Node.js 24 and run `npm ci`.
+2. Copy `.env.example` to `.env.local`; fill in the required values locally. Never commit `.env.local`.
+3. Run `docs/estimate-requests.sql` against a private PostgreSQL database. Give the application account only the required table permissions. Enable encrypted connections and restricted console access in the provider.
+4. Run `npm run dev` and open `http://localhost:3000/#free-estimate`.
 
----
+Checks: `npm run lint`, `npx tsc --noEmit`, and `npm run build`.
 
-## How to Customize
+## Request flow
 
-### 1. Change Phone Number / WhatsApp / Company Name
+The client and server validate the fields, including a required project ZIP code. Turnstile verification runs on the server. A PostgreSQL transaction enforces an IP rate limit and detects repeated requests. The transaction saves the request, creation time, contact details, project type, ZIP and ad attribution before the API responds successfully. Gmail notification then runs; its status is saved as `sent` or `failed`. A mail failure never removes an accepted request. The browser sends Pixel `Lead` with the returned `eventId`; optional server CAPI sends the same ID for deduplication. `/thank-you` does not send `Lead` when refreshed.
 
-Edit the single config file:
+The PostgreSQL table is the source of truth. Query it for new requests and for `notification_status = 'failed'`; contact those customers manually and investigate Gmail credentials. Restrict database access because rows contain personal information. Decide and implement a retention period before launch.
 
-```
-src/config/siteConfig.ts
-```
+## Required configuration
 
-Update these fields:
+Set these in Vercel **Preview** first, then Production after approval:
 
-| Field                   | Description                          |
-| ----------------------- | ------------------------------------ |
-| `companyName`           | Your business name                   |
-| `phoneDisplay`          | Display format: `+1 (555) 123-4567`  |
-| `phoneE164`             | International format: `+15551234567` |
-| `whatsappNumberE164`    | WhatsApp number: `15551234567`       |
-| `defaultWhatsAppMessage`| Pre-filled WhatsApp message          |
-| `serviceAreas`          | Array of city names                  |
+| Variable | Purpose |
+| --- | --- |
+| `DATABASE_URL` | Private PostgreSQL connection string |
+| `LEAD_HASH_SECRET` | Random server secret for pseudonymous IP rate limiting |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile public key |
+| `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile server key |
+| `TURNSTILE_EXPECTED_HOSTNAME` | Exact hostname allowed by this environment's Turnstile widget |
+| `ESTIMATE_REQUEST_TO_EMAIL` | Confirmed business recipient: `dglandscapemasonry@gmail.com` |
+| `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN` | Existing Gmail OAuth sender |
+| `NEXT_PUBLIC_META_PIXEL_ID` | `3406030969570155` |
 
-All components read from this file — no need to edit individual components.
+Requests fail closed if `TURNSTILE_EXPECTED_HOSTNAME` is unset or if Turnstile reports a hostname outside the configured allowlist. Optional tracking settings: `META_CAPI_ACCESS_TOKEN`, `META_GRAPH_API_VERSION`, `META_TEST_EVENT_CODE` (Preview test only), and the existing email bot variables documented in `docs/email-bot-setup.md`. Keep credentials server only. Never reveal values in logs or screenshots.
 
-### 2. Replace the Logo
+The Vercel project is `proyect` under `gfabrigtrf-7085s-projects`. The free Neon resource `dg-estimates-preview` is connected only to Preview; `docs/estimate-requests.sql` has been applied. Preview uses the `D&G estimate preview` Turnstile widget and the branch's stable Vercel hostname. In the Vercel settings checked on 2026-10-14, Production has `DATABASE_URL`, while the other five intake variables in the table above are Preview-only. Production therefore still needs its own Turnstile configuration, hash secret, and notification recipient before release. See [Preview verification](docs/preview-verification.md) for current test evidence and outstanding Meta access.
 
-1. Place your logo SVG at `/public/logo.svg`
-2. In `src/components/FinalCTA.tsx`, find the footer section and replace the text logo with:
+## Preview and release
 
-```tsx
-import Image from "next/image";
-// ...
-<Image src="/logo.svg" alt={siteConfig.companyName} width={180} height={40} />
-```
+1. Work on a branch other than `main` and push it to GitHub. Git integration should create a Vercel Preview for that branch. Do not deploy `main` until the Preview is accepted.
+2. Configure Preview PostgreSQL and Turnstile, apply the SQL migration, and set the Preview variables.
+3. Submit one clearly labeled synthetic request such as `TEST PREVIEW - D&G`, then verify the row, Gmail receipt, API response and browser `Lead` event. In Meta Events Manager Test Events, confirm browser/server event IDs match and one deduplicated conversion is counted. A console log is not proof of receipt by Meta.
+4. Test invalid fields, missing or invalid Turnstile token, duplicate request, rate limit, and notification failure. Ensure accepted requests remain in PostgreSQL when Gmail fails.
+5. Inspect mobile layout and accessibility. Remove synthetic rows after recording test evidence.
+6. Present the Preview evidence and request explicit approval before merging or deploying Production. Configure Production database and Turnstile only as part of the approved release.
 
-### 3. Add Real Before/After Photos
+## Maintenance and access
 
-1. Add your images to `/public/images/` (e.g., `before-garden.jpg`, `after-garden.jpg`)
-2. Edit `src/data/projects.ts`:
+Repository: `RaumzeittBO/dglandscapemasonry` (currently public). The `pachaxbo-commits` invitation was accepted and write access verified. A draft pull request for this work is open at [#1](https://github.com/RaumzeittBO/dglandscapemasonry/pull/1). For future maintainers, the owner can open **Settings → Collaborators → Add people** and grant write access. The Vercel project owner should also grant the maintenance team appropriate project access.
 
-```ts
-{
-  id: 1,
-  title: "Complete Garden Redesign",
-  tag: "Residential",
-  beforeSrc: "/images/before-garden.jpg",  // ← your real image
-  afterSrc: "/images/after-garden.jpg",     // ← your real image
-},
-```
-
-3. Supported formats: `.jpg`, `.png`, `.webp`
-4. Recommended size: at least **800×600px**, max **2000px** wide
-
-### 4. Add Google Maps Embed
-
-1. Go to [Google Maps](https://maps.google.com), search for your business
-2. Click **Share → Embed a map → Copy HTML**
-3. Open `src/components/LocationMap.tsx`
-4. Replace the placeholder `<div>` with the iframe (see the TODO comment in the file)
-
-### 5. Add a Hero Background Image
-
-1. Place your image at `/public/images/hero.jpg` (recommended: 1920×1080, dark/moody landscape)
-2. In `src/components/Hero.tsx`, replace the gradient background div with:
-
-```tsx
-import Image from "next/image";
-// ...
-<Image src="/images/hero.jpg" alt="" fill className="object-cover" priority />
-```
-
----
-
-## Performance Tips
-
-- **Use WebP format** for all images (50-70% smaller than JPEG)
-- **Compress images** before uploading (use [Squoosh](https://squoosh.app/))
-- **Max widths**: Keep max width ~1600px for gallery images. Avoid huge original camera files.
-- All images already use `next/image` for automatic optimization
-- Below-the-fold images use `loading="lazy"` automatically
-
----
-
-## Admin & Deployment Notes
-
-- **Domain and email setup are separate steps** (DNS + email provider).
-
----
-
-## Project Structure
-
-```
-src/
-├── app/
-│   ├── globals.css          # Global styles + Tailwind theme
-│   ├── layout.tsx           # Root layout + fonts + SEO
-│   └── page.tsx             # Main landing page
-├── components/
-│   ├── AnimationProvider.tsx # Lenis smooth scroll wrapper
-│   ├── BeforeAfterSlider.tsx # Draggable before/after comparison
-│   ├── FinalCTA.tsx         # Final CTA + Footer
-│   ├── Hero.tsx             # Hero section with GSAP text reveal
-│   ├── LocationMap.tsx      # Google Maps placeholder
-│   ├── Portfolio.tsx        # Before/After project grid
-│   ├── Process.tsx          # 3-step process timeline
-│   ├── ServiceAreas.tsx     # Service areas city list
-│   ├── Services.tsx         # 6 service cards
-│   ├── StickyContactButton.tsx # Floating WhatsApp/Call button
-│   └── Testimonials.tsx     # Customer testimonials carousel
-├── config/
-│   └── siteConfig.ts        # ★ Central config (phone, name, areas)
-├── data/
-│   └── projects.ts          # Before/After project data
-└── hooks/
-    └── useGsapAnimations.ts # GSAP animation utilities
-```
+Update content in `src/config/siteConfig.ts`, `src/data/` and `public/`. Use genuine D&G photos and independently verified business claims. Update dependencies with `npm update` on a branch, run the checks, review the Preview, then release by merging to `main` after approval. Rotate Gmail, Meta, database and Turnstile credentials through their providers and Vercel environment settings; redeploy affected environments.

@@ -5,6 +5,7 @@ export const PROJECT_TYPES = [
   "Retaining Wall",
   "Sod Installation",
   "Hardscape Construction",
+  "Masonry / Stonework",
   "Commercial Property",
   "Other",
 ] as const;
@@ -70,13 +71,10 @@ function sanitizeText(value: string, maxLength = 240) {
 export function normalizePhone(value: string) {
   const digits = value.replace(/\D/g, "");
   const nationalNumber = digits.length === 11 && digits.startsWith("1") ? digits.slice(1) : digits;
-
   if (nationalNumber.length !== 10) return "";
-
   const areaCode = nationalNumber.slice(0, 3);
   const exchange = nationalNumber.slice(3, 6);
   if (!/^[2-9]\d{2}$/.test(areaCode) || !/^[2-9]\d{2}$/.test(exchange)) return "";
-
   return `+1${nationalNumber}`;
 }
 
@@ -89,22 +87,14 @@ export function isValidEmail(value: string) {
 }
 
 export function isValidCityOrZip(value: string) {
-  const zipPattern = /\b\d{5}(?:-\d{4})?\b/;
-  const trimmed = value.trim();
-
-  if (!trimmed) return false;
-  if (/^\d/.test(trimmed)) return /^\d{5}(?:-\d{4})?$/.test(trimmed);
-
-  const city = trimmed.replace(zipPattern, "").replace(/,\s*(?:ma|massachusetts)\b/i, "").trim();
-  if (!city || /\d/.test(city)) return false;
-  return /^[a-z][a-z\s.'-]{1,80}$/i.test(city);
+  return /^\d{5}(?:-\d{4})?$/.test(value.trim());
 }
 
 export function parseCityAndZip(value: string) {
   const zipMatch = value.match(/\b\d{5}(?:-\d{4})?\b/);
   const city = value.replace(/\b\d{5}(?:-\d{4})?\b/g, "").replace(/,\s*ma\b/i, "").trim();
   return {
-    city: city || value.trim(),
+    city,
     zip: zipMatch?.[0] || "",
   };
 }
@@ -117,7 +107,7 @@ export function validateEstimateForm(input: EstimateRequestInput): ValidationRes
   const email = sanitizeText(getString(input, "email").toLowerCase());
   const cityOrZip = sanitizeText(getString(input, "cityOrZip"));
   const projectType = sanitizeText(getString(input, "projectType")) as ProjectType;
-  const projectDetails = getString(input, "projectDetails").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "").trim().slice(0, MAX_DETAILS_LENGTH);
+  const projectDetails = getString(input, "projectDetails").replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "").trim();
   const preferredContactMethod = sanitizeText(getString(input, "preferredContactMethod")) as ContactMethod;
   const preferredEstimateTiming = sanitizeText(getString(input, "preferredEstimateTiming")) as EstimateTiming | "";
   const consent = getBoolean(input, "consent");
@@ -127,7 +117,7 @@ export function validateEstimateForm(input: EstimateRequestInput): ValidationRes
   if (fullName.length < 2) errors.fullName = "Enter your full name.";
   if (!normalizedPhone) errors.phone = "Enter a valid US phone number.";
   if (!isValidEmail(email)) errors.email = "Enter a valid email address.";
-  if (!isValidCityOrZip(cityOrZip)) errors.cityOrZip = "Enter a valid city or US ZIP code.";
+  if (!isValidCityOrZip(cityOrZip)) errors.cityOrZip = "Enter a valid US ZIP code.";
   if (!PROJECT_TYPES.includes(projectType)) errors.projectType = "Select a project type.";
   if (projectDetails.length > MAX_DETAILS_LENGTH) errors.projectDetails = "Project details are too long.";
   if (!CONTACT_METHODS.includes(preferredContactMethod)) errors.preferredContactMethod = "Select a contact method.";

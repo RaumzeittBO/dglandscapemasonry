@@ -20,6 +20,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://dglandscapemasonry.com"),
   title: `${siteConfig.companyName} - Landscaping & Masonry`,
   description:
     "Premium landscaping and masonry construction for residential and commercial properties across Massachusetts service areas. Founded in 2010.",
