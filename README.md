@@ -27,13 +27,14 @@ Set these in Vercel **Preview** first, then Production after approval:
 | `LEAD_HASH_SECRET` | Random server secret for pseudonymous IP rate limiting |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile public key |
 | `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile server key |
+| `TURNSTILE_EXPECTED_HOSTNAME` | Exact hostname allowed by this environment's Turnstile widget |
 | `ESTIMATE_REQUEST_TO_EMAIL` | Confirmed business recipient: `dglandscapemasonry@gmail.com` |
 | `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`, `GMAIL_REFRESH_TOKEN` | Existing Gmail OAuth sender |
 | `NEXT_PUBLIC_META_PIXEL_ID` | `3406030969570155` |
 
-Optional: `TURNSTILE_EXPECTED_HOSTNAME` (exact hostname), `META_CAPI_ACCESS_TOKEN`, `META_GRAPH_API_VERSION`, `META_TEST_EVENT_CODE` (Preview test only), and the existing email bot variables documented in `docs/email-bot-setup.md`. Keep credentials server only. Never reveal values in logs or screenshots.
+Requests fail closed if `TURNSTILE_EXPECTED_HOSTNAME` is unset or if Turnstile reports a hostname outside the configured allowlist. Optional tracking settings: `META_CAPI_ACCESS_TOKEN`, `META_GRAPH_API_VERSION`, `META_TEST_EVENT_CODE` (Preview test only), and the existing email bot variables documented in `docs/email-bot-setup.md`. Keep credentials server only. Never reveal values in logs or screenshots.
 
-The Vercel project is `proyect` under `gfabrigtrf-7085s-projects`. Its Gmail and Meta variables exist in both environments. The free Neon resource `dg-estimates-preview` is connected only to Preview; `docs/estimate-requests.sql` has been applied. The verified recipient, `LEAD_HASH_SECRET`, and Cloudflare Turnstile keys and expected hostname are set for the `codex/secure-estimate-intake` Preview branch. The Turnstile widget is named `D&G estimate preview` and allows the branch's stable Vercel hostname. Production has no database or Turnstile configuration for this intake flow. See [Preview verification](docs/preview-verification.md) for the test result and outstanding Meta access.
+The Vercel project is `proyect` under `gfabrigtrf-7085s-projects`. The free Neon resource `dg-estimates-preview` is connected only to Preview; `docs/estimate-requests.sql` has been applied. Preview uses the `D&G estimate preview` Turnstile widget and the branch's stable Vercel hostname. In the Vercel settings checked on 2026-10-14, Production has `DATABASE_URL`, while the other five intake variables in the table above are Preview-only. Production therefore still needs its own Turnstile configuration, hash secret, and notification recipient before release. See [Preview verification](docs/preview-verification.md) for current test evidence and outstanding Meta access.
 
 ## Preview and release
 

@@ -16,7 +16,8 @@ function fingerprint(lead: EstimateLead) {
 
 async function verifyTurnstile(token: string, ip: string) {
   const secret = process.env.TURNSTILE_SECRET_KEY;
-  if (!secret || !token) return false;
+  const expectedHostname = process.env.TURNSTILE_EXPECTED_HOSTNAME?.trim().toLowerCase();
+  if (!secret || !token || !expectedHostname) return false;
   const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -25,11 +26,10 @@ async function verifyTurnstile(token: string, ip: string) {
   });
   if (!response.ok) return false;
   const result = (await response.json()) as { success?: boolean; hostname?: string };
-  const allowedHost = process.env.TURNSTILE_EXPECTED_HOSTNAME;
-  const allowedHosts = allowedHost === "dglandscapemasonry.com"
+  const allowedHostnames = expectedHostname === "dglandscapemasonry.com"
     ? ["dglandscapemasonry.com", "www.dglandscapemasonry.com"]
-    : allowedHost ? [allowedHost] : [];
-  return result.success === true && (!allowedHost || allowedHosts.includes(result.hostname || ""));
+    : [expectedHostname];
+  return result.success === true && allowedHostnames.includes(result.hostname?.toLowerCase() || "");
 }
 
 function emailBody(lead: EstimateLead, id: string) {
