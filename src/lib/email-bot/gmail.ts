@@ -138,6 +138,7 @@ export class GmailClient {
         refresh_token: this.config.gmail.refreshToken || "",
         grant_type: "refresh_token",
       }),
+      signal: AbortSignal.timeout(8000),
     });
 
     if (!response.ok) {
@@ -155,6 +156,7 @@ export class GmailClient {
     const token = await this.getAccessToken();
     const response = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me${path}`, {
       ...init,
+      signal: AbortSignal.timeout(8000),
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",

@@ -25,6 +25,20 @@ function splitName(fullName: string) {
   };
 }
 
+function safeEventSourceUrl(raw: string) {
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== "https:" && url.hostname !== "localhost") return "https://dglandscapemasonry.com/";
+    const allowed = url.hostname === "dglandscapemasonry.com" || url.hostname === "www.dglandscapemasonry.com" || url.hostname.endsWith(".vercel.app") || url.hostname === "localhost";
+    if (!allowed) return "https://dglandscapemasonry.com/";
+    url.search = "";
+    url.hash = "";
+    return url.toString();
+  } catch {
+    return "https://dglandscapemasonry.com/";
+  }
+}
+
 export async function sendMetaLeadEvent({ eventId, lead, clientIp, userAgent, eventSourceUrl }: SendLeadEventInput) {
   const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
   const accessToken = process.env.META_CAPI_ACCESS_TOKEN;
@@ -65,7 +79,7 @@ export async function sendMetaLeadEvent({ eventId, lead, clientIp, userAgent, ev
         event_time: Math.floor(Date.now() / 1000),
         event_id: eventId,
         action_source: "website",
-        event_source_url: eventSourceUrl,
+        event_source_url: safeEventSourceUrl(eventSourceUrl),
         user_data: userData,
         custom_data: {
           lead_type: "free_estimate",
@@ -76,7 +90,7 @@ export async function sendMetaLeadEvent({ eventId, lead, clientIp, userAgent, ev
     ],
   };
 
-  if (process.env.META_TEST_EVENT_CODE) {
+  if (process.env.VERCEL_ENV !== "production" && process.env.META_TEST_EVENT_CODE) {
     payload.test_event_code = process.env.META_TEST_EVENT_CODE;
   }
 
@@ -87,15 +101,15 @@ export async function sendMetaLeadEvent({ eventId, lead, clientIp, userAgent, ev
       ...payload,
       access_token: accessToken,
     }),
+    signal: AbortSignal.timeout(5000),
   });
 
   const body = await response.text();
   if (!response.ok) {
     console.error("Meta CAPI Lead failed", {
       status: response.status,
-      error: body.slice(0, 500),
     });
-    return { ok: false, skipped: false, status: response.status, body };
+    return { ok: false, skipped: false, status: response.status };
   }
 
   return { ok: true, body };

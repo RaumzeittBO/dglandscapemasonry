@@ -12,13 +12,13 @@ export default function PrivacyPolicyPage() {
           Privacy Policy
         </span>
         <h1 className="mt-6 font-heading text-5xl font-bold leading-none text-charcoal sm:text-6xl">Privacy Policy</h1>
-        <p className="mt-5 text-sm font-semibold text-charcoal/54">Last updated: July 22, 2026</p>
+        <p className="mt-5 text-sm font-semibold text-charcoal/54">Last updated: October 14, 2026</p>
 
         <div className="mt-10 space-y-8 rounded-[1.5rem] border border-charcoal/8 bg-white p-6 leading-7 text-charcoal/70 shadow-sm sm:p-10">
           <section>
             <h2 className="font-heading text-2xl font-bold text-charcoal">Information We Collect</h2>
             <p className="mt-3">
-              D&G Landscape and Masonry Inc. collects information you submit through our website, including your name, phone number, email address, city or ZIP code, project type, project description, preferred contact method, and preferred estimate timing.
+              D&G Landscape and Masonry Inc. collects information you submit through our website, including your name, phone number, email address, project ZIP code, project type, project description, preferred contact method, and preferred estimate timing. We also record the request date and available referral and advertising parameters.
             </p>
           </section>
 
@@ -32,7 +32,7 @@ export default function PrivacyPolicyPage() {
           <section>
             <h2 className="font-heading text-2xl font-bold text-charcoal">Cookies and Measurement</h2>
             <p className="mt-3">
-              Our website may use cookies and measurement tools including Meta Pixel. These tools help us understand campaign performance and measure when a valid estimate request is submitted. Additional server-side measurement tools may be activated in the future to improve attribution. We do not send project descriptions to Meta.
+              Our website uses Meta Pixel and may use Meta Conversions API to measure accepted estimate requests. Contact details sent through Conversions API are hashed, and we do not send project descriptions to Meta. Cloudflare Turnstile helps us block automated submissions.
             </p>
           </section>
 

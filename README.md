@@ -13,7 +13,7 @@ Checks: `npm run lint`, `npx tsc --noEmit`, and `npm run build`.
 
 ## Request flow
 
-The client and server validate the fields. Turnstile verification runs on the server. A PostgreSQL transaction enforces an IP rate limit and detects repeated requests. The transaction saves the request, creation time, contact details, project type, city or ZIP and ad attribution before the API responds successfully. Gmail notification then runs; its status is saved as `sent` or `failed`. A mail failure never removes an accepted request. The browser sends Pixel `Lead` with the returned `eventId`; optional server CAPI sends the same ID for deduplication. `/thank-you` does not send `Lead` when refreshed.
+The client and server validate the fields, including a required project ZIP code. Turnstile verification runs on the server. A PostgreSQL transaction enforces an IP rate limit and detects repeated requests. The transaction saves the request, creation time, contact details, project type, ZIP and ad attribution before the API responds successfully. Gmail notification then runs; its status is saved as `sent` or `failed`. A mail failure never removes an accepted request. The browser sends Pixel `Lead` with the returned `eventId`; optional server CAPI sends the same ID for deduplication. `/thank-you` does not send `Lead` when refreshed.
 
 The PostgreSQL table is the source of truth. Query it for new requests and for `notification_status = 'failed'`; contact those customers manually and investigate Gmail credentials. Restrict database access because rows contain personal information. Decide and implement a retention period before launch.
 

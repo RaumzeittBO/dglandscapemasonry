@@ -25,6 +25,8 @@ export async function storeEstimate(lead: EstimateLead, ipHash: string, fingerpr
     await client.query("BEGIN");
     // A transaction lock serializes requests from the same IP across all function instances.
     await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [ipHash]);
+    // A second lock prevents simultaneous submissions of the same lead from separate IPs.
+    await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [fingerprint]);
     if (await recentCount(client, ipHash) >= 4) {
       await client.query("ROLLBACK");
       return { id: "", created: false, limited: true };

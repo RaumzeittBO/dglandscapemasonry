@@ -201,8 +201,8 @@ export default function EstimateForm() {
             </label>
 
             <label className={LABEL_CLASS}>
-              City or ZIP Code *
-              <input className={FIELD_CLASS} name="cityOrZip" autoComplete="address-level2 postal-code" placeholder="Waltham or 02453" required aria-invalid={Boolean(fieldErrors.cityOrZip)} aria-describedby={fieldErrors.cityOrZip ? "cityOrZip-error" : undefined} />
+              Project ZIP Code *
+              <input className={FIELD_CLASS} name="cityOrZip" autoComplete="postal-code" inputMode="numeric" pattern="[0-9]{5}(-[0-9]{4})?" placeholder="02453" required aria-invalid={Boolean(fieldErrors.cityOrZip)} aria-describedby={fieldErrors.cityOrZip ? "cityOrZip-error" : undefined} />
               {fieldErrors.cityOrZip && <span id="cityOrZip-error" className="mt-2 block text-xs font-bold text-red-700">{fieldErrors.cityOrZip}</span>}
             </label>
 
@@ -274,7 +274,13 @@ export default function EstimateForm() {
           </label>
           {fieldErrors.consent && <span className="mt-2 block text-xs font-bold text-red-700">{fieldErrors.consent}</span>}
 
-          <div id="estimate-turnstile" className="mt-6 min-h-16" aria-label="Security check" />
+          {turnstileSiteKey ? (
+            <div id="estimate-turnstile" className="mt-6 min-h-16" aria-label="Security check" />
+          ) : (
+            <p className="mt-6 rounded-xl bg-amber-50 p-3 text-sm text-charcoal" role="status">
+              Online requests are temporarily unavailable. Please call or text {siteConfig.phoneDisplay}.
+            </p>
+          )}
 
           {error && (
             <div className="mt-5 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800" role="alert" aria-live="polite">
@@ -290,7 +296,7 @@ export default function EstimateForm() {
 
           <button
             type="submit"
-            disabled={state === "sending"}
+            disabled={state === "sending" || !turnstileSiteKey}
             className="mt-7 w-full rounded-full bg-gold px-8 py-4 text-base font-black text-ink shadow-[0_18px_45px_rgba(210,185,128,0.22)] transition hover:-translate-y-0.5 hover:bg-moss hover:text-white disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
           >
             {state === "sending" ? "Sending Your Request..." : "Request My Free Estimate"}

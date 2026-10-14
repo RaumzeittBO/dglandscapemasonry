@@ -9,7 +9,7 @@ import { setNotificationStatus, storeEstimate } from "@/lib/estimate/storage";
 export const runtime = "nodejs";
 
 function fingerprint(lead: EstimateLead) {
-  return crypto.createHash("sha256")
+  return crypto.createHmac("sha256", process.env.LEAD_HASH_SECRET!)
     .update([lead.email, lead.normalizedPhone, lead.cityOrZip, lead.projectType, lead.projectDetails].join("|").toLowerCase())
     .digest("hex");
 }
@@ -46,7 +46,9 @@ export async function POST(request: NextRequest) {
 
   let input: Record<string, unknown>;
   try {
-    input = (await request.json()) as Record<string, unknown>;
+    const raw = await request.text();
+    if (raw.length > 16_384) return NextResponse.json({ ok: false, error: "Request is too large." }, { status: 413 });
+    input = JSON.parse(raw) as Record<string, unknown>;
     if (!input || typeof input !== "object" || Array.isArray(input)) throw new Error("Invalid body");
   } catch {
     return NextResponse.json({ ok: false, error: "Invalid request." }, { status: 400 });

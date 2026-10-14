@@ -87,20 +87,14 @@ export function isValidEmail(value: string) {
 }
 
 export function isValidCityOrZip(value: string) {
-  const zipPattern = /\b\d{5}(?:-\d{4})?\b/;
-  const trimmed = value.trim();
-  if (!trimmed) return false;
-  if (/^\d/.test(trimmed)) return /^\d{5}(?:-\d{4})?$/.test(trimmed);
-  const city = trimmed.replace(zipPattern, "").replace(/,\s*(?:ma|massachusetts)\b/i, "").trim();
-  if (!city || /\d/.test(city)) return false;
-  return /^[a-z][a-z\s.'-]{1,80}$/i.test(city);
+  return /^\d{5}(?:-\d{4})?$/.test(value.trim());
 }
 
 export function parseCityAndZip(value: string) {
   const zipMatch = value.match(/\b\d{5}(?:-\d{4})?\b/);
   const city = value.replace(/\b\d{5}(?:-\d{4})?\b/g, "").replace(/,\s*ma\b/i, "").trim();
   return {
-    city: city || value.trim(),
+    city,
     zip: zipMatch?.[0] || "",
   };
 }
@@ -123,7 +117,7 @@ export function validateEstimateForm(input: EstimateRequestInput): ValidationRes
   if (fullName.length < 2) errors.fullName = "Enter your full name.";
   if (!normalizedPhone) errors.phone = "Enter a valid US phone number.";
   if (!isValidEmail(email)) errors.email = "Enter a valid email address.";
-  if (!isValidCityOrZip(cityOrZip)) errors.cityOrZip = "Enter a valid city or US ZIP code.";
+  if (!isValidCityOrZip(cityOrZip)) errors.cityOrZip = "Enter a valid US ZIP code.";
   if (!PROJECT_TYPES.includes(projectType)) errors.projectType = "Select a project type.";
   if (projectDetails.length > MAX_DETAILS_LENGTH) errors.projectDetails = "Project details are too long.";
   if (!CONTACT_METHODS.includes(preferredContactMethod)) errors.preferredContactMethod = "Select a contact method.";
