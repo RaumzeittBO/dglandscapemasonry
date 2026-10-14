@@ -26,7 +26,10 @@ async function verifyTurnstile(token: string, ip: string) {
   if (!response.ok) return false;
   const result = (await response.json()) as { success?: boolean; hostname?: string };
   const allowedHost = process.env.TURNSTILE_EXPECTED_HOSTNAME;
-  return result.success === true && (!allowedHost || result.hostname === allowedHost);
+  const allowedHosts = allowedHost === "dglandscapemasonry.com"
+    ? ["dglandscapemasonry.com", "www.dglandscapemasonry.com"]
+    : allowedHost ? [allowedHost] : [];
+  return result.success === true && (!allowedHost || allowedHosts.includes(result.hostname || ""));
 }
 
 function emailBody(lead: EstimateLead, id: string) {
