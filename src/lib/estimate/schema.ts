@@ -26,7 +26,7 @@ export type EstimateLead = {
   cityOrZip: string;
   projectType: ProjectType;
   projectDetails: string;
-  preferredContactMethod: ContactMethod;
+  preferredContactMethod: ContactMethod | "";
   preferredEstimateTiming: EstimateTiming | "";
   consent: true;
   attribution: LeadAttribution;
@@ -116,11 +116,11 @@ export function validateEstimateForm(input: EstimateRequestInput): ValidationRes
   if (honeypot) errors.company = "Invalid request.";
   if (fullName.length < 2) errors.fullName = "Enter your full name.";
   if (!normalizedPhone) errors.phone = "Enter a valid US phone number.";
-  if (!isValidEmail(email)) errors.email = "Enter a valid email address.";
+  if (email && !isValidEmail(email)) errors.email = "Enter a valid email address.";
   if (!isValidCityOrZip(cityOrZip)) errors.cityOrZip = "Enter a valid US ZIP code.";
   if (!PROJECT_TYPES.includes(projectType)) errors.projectType = "Select a project type.";
   if (projectDetails.length > MAX_DETAILS_LENGTH) errors.projectDetails = "Project details are too long.";
-  if (!CONTACT_METHODS.includes(preferredContactMethod)) errors.preferredContactMethod = "Select a contact method.";
+  if (preferredContactMethod && !CONTACT_METHODS.includes(preferredContactMethod)) errors.preferredContactMethod = "Select a valid contact method.";
   if (preferredEstimateTiming && !ESTIMATE_TIMINGS.includes(preferredEstimateTiming)) errors.preferredEstimateTiming = "Select a valid timing option.";
   if (!consent) errors.consent = "Consent is required.";
 

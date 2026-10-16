@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import { CONTACT_METHODS, ESTIMATE_TIMINGS, PROJECT_TYPES, normalizePhone, validateEstimateForm } from "@/lib/estimate/schema";
 import { getCallUrl, getPrivacyPolicyUrl, siteConfig } from "@/config/siteConfig";
@@ -10,6 +10,16 @@ import { reportConversion } from "@/utils/conversion";
 
 type SubmitState = "idle" | "sending" | "success" | "error";
 type FieldErrors = Record<string, string>;
+type DiagnosticEvent = "form_view" | "form_start" | "submit_attempt" | "validation_error" | "send_error";
+
+function reportDiagnostic(event: DiagnosticEvent) {
+  void fetch("/api/estimate-diagnostics", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ event }),
+    keepalive: true,
+  }).catch(() => undefined);
+}
 
 const FIELD_CLASS =
   "mt-2 w-full rounded-xl border border-charcoal/10 bg-white px-4 py-3 text-sm font-semibold text-charcoal shadow-sm transition focus:border-moss focus:outline-none focus:ring-2 focus:ring-moss/20";
@@ -46,7 +56,26 @@ export default function EstimateForm() {
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [turnstileToken, setTurnstileToken] = useState("");
+  const formStarted = useRef(false);
+  const invalidReported = useRef(false);
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+
+  useEffect(() => {
+    reportDiagnostic("form_view");
+  }, []);
+
+  const handleFormStart = () => {
+    if (formStarted.current) return;
+    formStarted.current = true;
+    reportDiagnostic("form_start");
+  };
+
+  const handleInvalid = () => {
+    if (invalidReported.current) return;
+    invalidReported.current = true;
+    reportDiagnostic("validation_error");
+    window.setTimeout(() => { invalidReported.current = false; }, 1000);
+  };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -56,15 +85,19 @@ export default function EstimateForm() {
     const formData = new FormData(form);
     const normalizedPhone = normalizePhone(String(formData.get("phone") || ""));
 
+    reportDiagnostic("submit_attempt");
+
     setError("");
     setFieldErrors({});
 
     if (!turnstileSiteKey || !turnstileToken) {
+      reportDiagnostic("validation_error");
       setError("Please complete the security check before sending your request.");
       return;
     }
 
     if (!normalizedPhone) {
+      reportDiagnostic("validation_error");
       setFieldErrors({ phone: "Please enter a valid US phone number." });
       setError("Please enter a valid US phone number.");
       return;
@@ -88,6 +121,7 @@ export default function EstimateForm() {
 
     const clientValidation = validateEstimateForm(payload);
     if (!clientValidation.ok) {
+      reportDiagnostic("validation_error");
       setFieldErrors(clientValidation.errors);
       setError("Please correct the highlighted fields.");
       return;
@@ -110,6 +144,7 @@ export default function EstimateForm() {
 
       if (!response.ok || !result.ok || !result.eventId) {
         if (result.errors) setFieldErrors(result.errors);
+        reportDiagnostic(response.status === 400 ? "validation_error" : "send_error");
         throw new Error(result.error || "We couldn't send your request. Please try again or call us at (413) 277-5937.");
       }
 
@@ -132,6 +167,7 @@ export default function EstimateForm() {
       setTurnstileToken("");
       window.setTimeout(() => router.push("/thank-you"), 450);
     } catch (submitError) {
+      reportDiagnostic("send_error");
       setState("error");
       setTurnstileToken("");
       if (turnstileWidget.current) window.turnstile?.reset(turnstileWidget.current);
@@ -140,19 +176,19 @@ export default function EstimateForm() {
   };
 
   return (
-    <section id="free-estimate" className="bg-offwhite px-6 py-24 sm:py-32">
+    <section id="free-estimate" className="bg-offwhite px-4 py-10 sm:px-6 sm:py-24">
       {turnstileSiteKey && <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" strategy="afterInteractive" onLoad={() => {
         const container = document.getElementById("estimate-turnstile");
         if (container && window.turnstile && !container.hasChildNodes()) {
           turnstileWidget.current = window.turnstile.render(container, { sitekey: turnstileSiteKey, callback: setTurnstileToken, "expired-callback": () => setTurnstileToken("") });
         }
       }} />}
-      <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.82fr_1fr] lg:items-start">
-        <div className="reveal-element lg:sticky lg:top-28">
+      <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.82fr_1fr] lg:items-start lg:gap-10">
+        <div className="order-2 lg:order-1 lg:sticky lg:top-28">
           <span className="inline-flex rounded-full bg-moss px-4 py-2 text-xs font-black uppercase tracking-[0.18em] text-white">
             Free on-site estimate
           </span>
-          <h2 className="mt-6 font-heading text-5xl font-bold leading-[0.98] text-charcoal sm:text-6xl">
+          <h2 className="mt-6 font-heading text-4xl font-bold leading-[0.98] text-charcoal sm:text-6xl">
             Request Your Free On-Site Estimate
           </h2>
           <p className="mt-6 max-w-xl text-lg leading-8 text-charcoal/66">
@@ -173,7 +209,10 @@ export default function EstimateForm() {
           </a>
         </div>
 
-        <form ref={formRef} onSubmit={handleSubmit} className="reveal-element rounded-[1.5rem] border border-charcoal/8 bg-white p-5 shadow-[0_28px_90px_rgba(12,18,14,0.1)] sm:p-8">
+        <form ref={formRef} onSubmit={handleSubmit} onFocusCapture={handleFormStart} onInvalidCapture={handleInvalid} className="order-1 rounded-[1.5rem] border border-charcoal/8 bg-white p-4 shadow-[0_20px_55px_rgba(12,18,14,0.08)] sm:p-8 lg:order-2">
+          <h2 className="mb-2 font-heading text-2xl font-bold leading-tight text-charcoal sm:text-3xl">Get Your Free On-Site Estimate</h2>
+          <p className="mb-5 text-sm text-charcoal/65">A few details help us prepare your estimate.</p>
+          <a href={getCallUrl()} onClick={reportConversion} className="mb-5 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-moss/25 px-4 py-2 text-sm font-black text-moss sm:w-auto">Call or text {siteConfig.phoneDisplay}</a>
           <div className="hidden">
             <label>
               Company
@@ -195,8 +234,8 @@ export default function EstimateForm() {
             </label>
 
             <label className={LABEL_CLASS}>
-              Email Address *
-              <input className={FIELD_CLASS} name="email" type="email" autoComplete="email" inputMode="email" required aria-invalid={Boolean(fieldErrors.email)} aria-describedby={fieldErrors.email ? "email-error" : undefined} />
+              Email Address (optional)
+              <input className={FIELD_CLASS} name="email" type="email" autoComplete="email" inputMode="email" aria-invalid={Boolean(fieldErrors.email)} aria-describedby={fieldErrors.email ? "email-error" : undefined} />
               {fieldErrors.email && <span id="email-error" className="mt-2 block text-xs font-bold text-red-700">{fieldErrors.email}</span>}
             </label>
 
@@ -222,8 +261,8 @@ export default function EstimateForm() {
             </label>
 
             <label className={LABEL_CLASS}>
-              Preferred Contact Method *
-              <select className={FIELD_CLASS} name="preferredContactMethod" required defaultValue="" aria-invalid={Boolean(fieldErrors.preferredContactMethod)} aria-describedby={fieldErrors.preferredContactMethod ? "preferredContactMethod-error" : undefined}>
+              Preferred Contact Method (optional)
+              <select className={FIELD_CLASS} name="preferredContactMethod" defaultValue="" aria-invalid={Boolean(fieldErrors.preferredContactMethod)} aria-describedby={fieldErrors.preferredContactMethod ? "preferredContactMethod-error" : undefined}>
                 <option value="" disabled>
                   Select contact method
                 </option>

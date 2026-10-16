@@ -16,7 +16,7 @@ const heroImages = [
 const metrics = [
     { value: "2010", label: "Founded" },
     { value: "5.0", label: "Google rating" },
-    { value: "12%", label: "New customer offer" },
+    { value: "Free", label: "On-site estimates" },
 ];
 
 const proofPoints = [
@@ -232,9 +232,9 @@ export default function Hero() {
 
                         <div className="grid grid-cols-[0.72fr_1fr] border-t border-white/12 bg-ink/72">
                             <div className="border-r border-white/12 p-6">
-                                <div className="font-heading text-5xl font-black leading-none text-gold">12%</div>
+                                <div className="font-heading text-3xl font-black leading-none text-gold">Free Estimates</div>
                                 <div className="mt-2 text-xs font-black uppercase tracking-[0.16em] text-white/72">
-                                    Off new customers
+                                    On-site, no obligation
                                 </div>
                             </div>
                             <div className="p-6">
