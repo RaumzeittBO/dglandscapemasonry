@@ -51,7 +51,7 @@ export default function FinalCTA() {
                         Make the outside of your property the reason people stop looking.
                     </h2>
                     <p className="mx-auto mt-7 max-w-2xl text-lg leading-8 text-white/68">
-                        New customers can ask about the current 12% offer during the estimate.
+                        Get a free on-site estimate for your landscaping or masonry project.
                     </p>
 
                     <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">

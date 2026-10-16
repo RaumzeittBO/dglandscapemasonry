@@ -57,7 +57,6 @@ export async function sendMetaLeadEvent({ eventId, lead, clientIp, userAgent, ev
   const { firstName, lastName } = splitName(lead.fullName);
   const { city, zip } = parseCityAndZip(lead.cityOrZip);
   const userData: Record<string, string | string[]> = {
-    em: [sha256(lead.email)],
     ph: [sha256(lead.normalizedPhone.replace(/\D/g, ""))],
     fn: firstName ? [sha256(firstName)] : [],
     ln: lastName ? [sha256(lastName)] : [],
@@ -68,6 +67,7 @@ export async function sendMetaLeadEvent({ eventId, lead, clientIp, userAgent, ev
     client_user_agent: userAgent,
   };
 
+  if (lead.email) userData.em = [sha256(lead.email)];
   if (zip) userData.zp = [sha256(zip)];
   if (lead.attribution.fbp) userData.fbp = lead.attribution.fbp;
   if (lead.attribution.fbc) userData.fbc = lead.attribution.fbc;

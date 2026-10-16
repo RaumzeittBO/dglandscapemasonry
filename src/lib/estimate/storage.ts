@@ -45,7 +45,7 @@ export async function storeEstimate(lead: EstimateLead, ipHash: string, fingerpr
         preferred_contact_method, preferred_estimate_timing, attribution, ip_hash, fingerprint)
        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb,$11,$12)`,
       [eventId, lead.fullName, lead.phone, lead.email, lead.cityOrZip, lead.projectType,
-        lead.projectDetails, lead.preferredContactMethod, lead.preferredEstimateTiming,
+        lead.projectDetails, lead.preferredContactMethod || "", lead.preferredEstimateTiming,
         JSON.stringify(lead.attribution), ipHash, fingerprint],
     );
     await client.query("COMMIT");

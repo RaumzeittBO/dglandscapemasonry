@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
       assertGmailConfigured(config);
       await new GmailClient(config).sendEmail(recipient,
         `NEW ESTIMATE REQUEST - ${lead.projectType} - ${lead.cityOrZip}`,
-        emailBody(lead, eventId), lead.email);
+        emailBody(lead, eventId), lead.email || undefined);
       notification = "sent";
     } catch (error) {
       console.error("Estimate notification failed", { eventId, error: error instanceof Error ? error.message : "unknown" });
