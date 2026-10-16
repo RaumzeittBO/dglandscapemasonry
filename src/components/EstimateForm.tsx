@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import { CONTACT_METHODS, ESTIMATE_TIMINGS, PROJECT_TYPES, normalizePhone, validateEstimateForm } from "@/lib/estimate/schema";
-import { getCallUrl, getPrivacyPolicyUrl, siteConfig } from "@/config/siteConfig";
+import { getCallUrl, getPrivacyPolicyUrl, getSmsUrl, siteConfig } from "@/config/siteConfig";
 import { reportConversion } from "@/utils/conversion";
 
 type SubmitState = "idle" | "sending" | "success" | "error";
@@ -56,12 +56,25 @@ export default function EstimateForm() {
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [turnstileToken, setTurnstileToken] = useState("");
+  const formViewed = useRef(false);
   const formStarted = useRef(false);
   const invalidReported = useRef(false);
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
 
   useEffect(() => {
-    reportDiagnostic("form_view");
+    const form = formRef.current;
+    if (!form || formViewed.current) return;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && entry.intersectionRatio >= 0.25 && !formViewed.current) {
+        formViewed.current = true;
+        reportDiagnostic("form_view");
+        observer.disconnect();
+      }
+    }, { threshold: 0.25 });
+
+    observer.observe(form);
+    return () => observer.disconnect();
   }, []);
 
   const handleFormStart = () => {
@@ -128,6 +141,7 @@ export default function EstimateForm() {
     }
 
     setState("sending");
+    let failureEvent: DiagnosticEvent = "send_error";
 
     try {
       const response = await fetch("/api/estimate-request", {
@@ -144,7 +158,7 @@ export default function EstimateForm() {
 
       if (!response.ok || !result.ok || !result.eventId) {
         if (result.errors) setFieldErrors(result.errors);
-        reportDiagnostic(response.status === 400 ? "validation_error" : "send_error");
+        failureEvent = response.status === 400 ? "validation_error" : "send_error";
         throw new Error(result.error || "We couldn't send your request. Please try again or call us at (413) 277-5937.");
       }
 
@@ -167,7 +181,7 @@ export default function EstimateForm() {
       setTurnstileToken("");
       window.setTimeout(() => router.push("/thank-you"), 450);
     } catch (submitError) {
-      reportDiagnostic("send_error");
+      reportDiagnostic(failureEvent);
       setState("error");
       setTurnstileToken("");
       if (turnstileWidget.current) window.turnstile?.reset(turnstileWidget.current);
@@ -200,19 +214,23 @@ export default function EstimateForm() {
           <div className="mt-8 rounded-2xl border border-charcoal/8 bg-white p-5 text-sm leading-6 text-charcoal/64 shadow-sm">
             Free estimates are coordinated by call, text, or email. The team can request anything else needed after reviewing your project details.
           </div>
-          <a
-            href={getCallUrl()}
-            onClick={reportConversion}
-            className="mt-6 inline-flex rounded-full border border-moss/20 px-6 py-3 text-sm font-black text-moss transition hover:bg-white"
-          >
-            Need immediate help? Call/Text {siteConfig.phoneDisplay}
-          </a>
+          <div className="mt-6 flex flex-wrap gap-3">
+            <a href={getCallUrl()} onClick={reportConversion} className="inline-flex rounded-full border border-moss/20 px-6 py-3 text-sm font-black text-moss transition hover:bg-white">
+              Call {siteConfig.phoneDisplay}
+            </a>
+            <a href={getSmsUrl()} onClick={reportConversion} className="inline-flex rounded-full border border-moss/20 px-6 py-3 text-sm font-black text-moss transition hover:bg-white">
+              Text {siteConfig.phoneDisplay}
+            </a>
+          </div>
         </div>
 
         <form ref={formRef} onSubmit={handleSubmit} onFocusCapture={handleFormStart} onInvalidCapture={handleInvalid} className="order-1 rounded-[1.5rem] border border-charcoal/8 bg-white p-4 shadow-[0_20px_55px_rgba(12,18,14,0.08)] sm:p-8 lg:order-2">
           <h2 className="mb-2 font-heading text-2xl font-bold leading-tight text-charcoal sm:text-3xl">Get Your Free On-Site Estimate</h2>
           <p className="mb-5 text-sm text-charcoal/65">A few details help us prepare your estimate.</p>
-          <a href={getCallUrl()} onClick={reportConversion} className="mb-5 inline-flex min-h-11 w-full items-center justify-center rounded-full border border-moss/25 px-4 py-2 text-sm font-black text-moss sm:w-auto">Call or text {siteConfig.phoneDisplay}</a>
+          <div className="mb-5 grid grid-cols-2 gap-2 sm:flex">
+            <a href={getCallUrl()} onClick={reportConversion} className="inline-flex min-h-11 items-center justify-center rounded-full border border-moss/25 px-3 py-2 text-sm font-black text-moss">Call {siteConfig.phoneDisplay}</a>
+            <a href={getSmsUrl()} onClick={reportConversion} className="inline-flex min-h-11 items-center justify-center rounded-full border border-moss/25 px-3 py-2 text-sm font-black text-moss">Text {siteConfig.phoneDisplay}</a>
+          </div>
           <div className="hidden">
             <label>
               Company
