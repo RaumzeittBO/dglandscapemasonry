@@ -12,7 +12,16 @@ const ALLOWED_EVENTS = new Set([
 
 export async function POST(request: NextRequest) {
   const origin = request.headers.get("origin");
-  if (!origin || origin !== request.nextUrl.origin) {
+  const requestHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim()
+    || request.headers.get("host");
+  let originUrl: URL | undefined;
+  try {
+    if (origin) originUrl = new URL(origin);
+  } catch {
+    originUrl = undefined;
+  }
+  const localHttp = originUrl?.protocol === "http:" && ["localhost", "127.0.0.1"].includes(originUrl.hostname);
+  if (!originUrl || originUrl.host !== requestHost || (originUrl.protocol !== "https:" && !localHttp)) {
     return NextResponse.json({ ok: false }, { status: 403 });
   }
 
