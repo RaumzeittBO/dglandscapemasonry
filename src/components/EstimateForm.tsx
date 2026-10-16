@@ -176,7 +176,7 @@ export default function EstimateForm() {
   };
 
   return (
-    <section id="free-estimate" className="bg-offwhite px-4 py-10 sm:px-6 sm:py-24">
+    <section id="free-estimate" className="scroll-mt-24 bg-offwhite px-4 py-10 sm:px-6 sm:py-24">
       {turnstileSiteKey && <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" strategy="afterInteractive" onLoad={() => {
         const container = document.getElementById("estimate-turnstile");
         if (container && window.turnstile && !container.hasChildNodes()) {
